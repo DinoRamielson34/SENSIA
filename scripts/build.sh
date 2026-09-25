@@ -11,7 +11,7 @@ fi
 echo '==> Installation/vérification des dépendances...'
 flutter pub get
 
-echo '==> Compilation de l’APK Android (debug)...'
+echo '==> Compilation de l’APK Android (debug)...'c
 flutter build apk --debug
 
 echo '==> APK prêt : app/build/app/outputs/flutter-apk/app-debug.apk'

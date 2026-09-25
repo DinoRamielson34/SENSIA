@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "756921566861",
+    "project_id": "izahay-703fd",
+    "storage_bucket": "izahay-703fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756921566861:android:391e6ec6564b52503184c4",
+        "android_client_info": {
+          "package_name": "mg.izahay.izahay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfR6rctW7u9rwwR35pTzLF_KIefpvM9U4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

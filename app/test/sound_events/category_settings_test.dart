@@ -38,4 +38,22 @@ void main() {
     settings.updateCategory('sonnette', desactivee);
     expect(settings.lookup('sonnette'), same(desactivee));
   });
+
+  test('all expose une copie non modifiable des réglages actuels', () {
+    final settings = SoundEventSettings();
+    const custom = CategorySettings(
+      enabled: true,
+      threshold: 0.6,
+      requiredConfirmations: 2,
+      cooldown: Duration(seconds: 10),
+    );
+    settings.updateCategory('alarme', custom);
+
+    final all = settings.all;
+
+    expect(all['sonnette'], isNotNull);
+    expect(all['aboiement'], isNotNull);
+    expect(all['alarme'], same(custom));
+    expect(() => all['nouvelle'] = custom, throwsUnsupportedError);
+  });
 }

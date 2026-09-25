@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:developer' as developer;
+
 import '../haptics/haptic_engine.dart';
 import '../haptics/haptic_exceptions.dart';
 import 'category_settings.dart';
+import 'history_sink.dart';
 import 'sound_event.dart';
 import 'sound_event_result.dart';
 
@@ -13,6 +17,7 @@ import 'sound_event_result.dart';
 /// `SoundEvent.isSimulation`).
 class SoundEventProcessor {
   final HapticEngine _hapticEngine;
+  final HistorySink? _historySink;
 
   /// Réglages par catégorie (seuil, activation, confirmations,
   /// anti-répétition), modifiables à l'exécution.
@@ -41,7 +46,9 @@ class SoundEventProcessor {
   SoundEventProcessor({
     required HapticEngine hapticEngine,
     SoundEventSettings? settings,
+    HistorySink? historySink,
   })  : _hapticEngine = hapticEngine,
+        _historySink = historySink,
         settings = settings ?? SoundEventSettings();
 
   /// Autorise à nouveau le traitement des événements en provenance du
@@ -132,7 +139,36 @@ class SoundEventProcessor {
     }
 
     _confirmationCounts[event.category] = 0;
-    return _result(event, SoundEventStatus.triggered);
+    final result = _result(event, SoundEventStatus.triggered);
+    final sink = _historySink;
+    if (sink != null) {
+      // Fire-and-forget : jamais attendu, pour qu'un historique lent ou
+      // hors ligne (Firebase) ne retarde jamais une vibration déjà
+      // déclenchée. L'erreur éventuelle du sink est délibérément avalée
+      // ici : process() a déjà retourné son résultat, il n'y a plus
+      // personne pour la recevoir. `Future.sync()` capture aussi une
+      // exception levée de façon SYNCHRONE par une implémentation de
+      // HistorySink qui ne serait pas `async` (sink.record(result) seul
+      // ne le ferait pas : l'exception s'échapperait avant même de
+      // produire un Future à intercepter).
+      unawaited(Future.sync(() => sink.record(result)).catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        // Avalée pour l'appelant de process() (qui a déjà son résultat),
+        // mais journalisée : sans ça, une mauvaise config Firebase
+        // (règles non déployées, Auth anonyme désactivée...) fait
+        // silencieusement disparaître tout l'historique sans aucune
+        // trace nulle part.
+        developer.log(
+          'HistorySink.record a échoué (avalé, la vibration a déjà eu lieu)',
+          name: 'SoundEventProcessor',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }));
+    }
+    return result;
   }
 
   // Restaure _lastTriggeredAt à son état d'avant la réservation, quand le

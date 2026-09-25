@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
 import 'package:izahay/haptics/haptic_exceptions.dart';
 import 'package:izahay/sound_events/category_settings.dart';
+import 'package:izahay/sound_events/history_sink.dart';
 import 'package:izahay/sound_events/sound_event.dart';
 import 'package:izahay/sound_events/sound_event_processor.dart';
 import 'package:izahay/sound_events/sound_event_result.dart';
@@ -311,4 +314,99 @@ void main() {
     );
     expect(exactlyAt.status, SoundEventStatus.triggered);
   });
+
+  test('un historySink qui ne répond jamais ne bloque pas process()',
+      () async {
+    final sink = _RecordingHistorySink(neverCompletes: true);
+    final withSink = SoundEventProcessor(
+      hapticEngine: hapticEngine,
+      historySink: sink,
+    );
+
+    final result = await withSink
+        .process(event(category: 'sonnette', score: 0.9))
+        .timeout(const Duration(seconds: 2));
+
+    expect(result.status, SoundEventStatus.triggered);
+    expect(sink.received, hasLength(1));
+  });
+
+  test('une erreur du historySink n\'empêche pas process() de retourner '
+      'normalement', () async {
+    final sink = _RecordingHistorySink(throwsOnRecord: true);
+    final withSink = SoundEventProcessor(
+      hapticEngine: hapticEngine,
+      historySink: sink,
+    );
+
+    final result = await withSink
+        .process(event(category: 'sonnette', score: 0.9))
+        .timeout(const Duration(seconds: 2));
+
+    expect(result.status, SoundEventStatus.triggered);
+  });
+
+  test('historySink n\'est jamais appelé pour un résultat non déclenché',
+      () async {
+    final sink = _RecordingHistorySink();
+    final withSink = SoundEventProcessor(
+      hapticEngine: hapticEngine,
+      historySink: sink,
+    );
+
+    await withSink.process(event(category: 'sonnette', score: 0.1));
+    // Laisse une chance à un éventuel appel fire-and-forget de s'exécuter
+    // avant de vérifier qu'il n'a jamais eu lieu.
+    await Future<void>.delayed(Duration.zero);
+
+    expect(sink.received, isEmpty);
+  });
+
+  test('un historySink qui lève une exception de façon synchrone '
+      '(record() non-async) n\'échappe pas de process()', () async {
+    final sink = _RecordingHistorySink(throwsSynchronously: true);
+    final withSink = SoundEventProcessor(
+      hapticEngine: hapticEngine,
+      historySink: sink,
+    );
+
+    final result = await withSink
+        .process(event(category: 'sonnette', score: 0.9))
+        .timeout(const Duration(seconds: 2));
+
+    expect(result.status, SoundEventStatus.triggered);
+    expect(sink.received, hasLength(1));
+  });
+}
+
+/// Double de test pour [HistorySink], utilisé uniquement dans ce fichier.
+class _RecordingHistorySink implements HistorySink {
+  _RecordingHistorySink({
+    this.neverCompletes = false,
+    this.throwsOnRecord = false,
+    this.throwsSynchronously = false,
+  });
+
+  final bool neverCompletes;
+  final bool throwsOnRecord;
+  final bool throwsSynchronously;
+  final List<SoundEventResult> received = [];
+
+  @override
+  Future<void> record(SoundEventResult result) {
+    received.add(result);
+    if (throwsSynchronously) {
+      // Volontairement PAS une méthode async : lève avant même de
+      // retourner un Future, pour reproduire une implémentation de
+      // HistorySink mal écrite (voir le test correspondant).
+      throw StateError('panne synchrone simulée du sink');
+    }
+    if (throwsOnRecord) {
+      return Future<void>.error(StateError('panne simulée du sink'));
+    }
+    if (neverCompletes) {
+      return Completer<void>().future;
+    }
+    return Future<void>.value();
+  }
 }

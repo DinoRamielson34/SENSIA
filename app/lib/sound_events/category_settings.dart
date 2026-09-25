@@ -64,4 +64,9 @@ class SoundEventSettings {
   /// Retourne les réglages de [category], ou `null` si la catégorie est
   /// inconnue du système.
   CategorySettings? lookup(String category) => _settings[category];
+
+  /// Copie en lecture seule de tous les réglages actuellement configurés,
+  /// utilisée pour la persistance (module historique) sans dupliquer ce
+  /// modèle ni exposer la table interne mutable.
+  Map<String, CategorySettings> get all => Map.unmodifiable(_settings);
 }

@@ -67,4 +67,165 @@ void main() {
       expect(event.isSimulation, isFalse);
     });
   });
+
+  group('EventSimulator', () {
+    late FakeVibrationExecutor executor;
+    late HapticEngine hapticEngine;
+    late SoundEventProcessor processor;
+    late EventSimulator simulator;
+
+    setUp(() {
+      executor = FakeVibrationExecutor();
+      hapticEngine = HapticEngine(executor: executor);
+      processor = SoundEventProcessor(hapticEngine: hapticEngine);
+      simulator = EventSimulator(processor: processor);
+    });
+
+    test('send() ne duplique aucune règle métier : résultat et effets '
+        'strictement identiques à un appel direct à processor.process() '
+        'avec le même événement', () async {
+      final event = SimulationScenarios.sonnette();
+
+      final viaSimulator = await simulator.send(event);
+
+      // Deuxième processor/executor indépendants, même configuration,
+      // pour comparer un appel DIRECT sur un état vierge équivalent.
+      final directExecutor = FakeVibrationExecutor();
+      final directProcessor = SoundEventProcessor(
+        hapticEngine: HapticEngine(executor: directExecutor),
+      );
+      final direct = await directProcessor.process(event);
+
+      expect(viaSimulator.status, direct.status);
+      expect(viaSimulator.isSimulation, direct.isSimulation);
+      expect(executor.vibrateCalls, directExecutor.vibrateCalls);
+    });
+
+    test('send() délègue réellement à LA MÊME instance de processor '
+        '(pas seulement un résultat équivalent) : un appel via le '
+        'simulateur laisse une trace d\'état visible en appelant '
+        'directement ce même processor juste après', () async {
+      final event = SimulationScenarios.sonnette();
+
+      await simulator.send(event);
+      // Si simulator.send() avait sa propre logique au lieu de déléguer
+      // à `processor`, cet appel DIRECT sur ce MÊME processor ne verrait
+      // aucun état de cooldown : il redéclencherait au lieu d'être
+      // bloqué. Seule une vraie délégation à cette instance précise
+      // laisse cette trace.
+      final justeApres = await processor.process(event);
+
+      expect(justeApres.status, SoundEventStatus.inCooldown);
+    });
+
+    test('send() sur le scénario 7 est réellement bloqué par '
+        'stopListening(), pas seulement de la bonne forme', () async {
+      processor.stopListening();
+
+      final result = await simulator.send(
+        SimulationScenarios.whileListeningStopped('sonnette'),
+      );
+
+      expect(result.status, SoundEventStatus.listeningStopped);
+      expect(executor.vibrateCalls, isEmpty);
+    });
+
+    test('sendSeries() envoie N événements dans l\'ordre, avec le délai '
+        'injecté (jamais Future.delayed réel) entre chaque envoi',
+        () async {
+      final delaisRecus = <Duration>[];
+      final simulatorAvecDelaiFactice = EventSimulator(
+        processor: processor,
+        delay: (duration) async => delaisRecus.add(duration),
+      );
+
+      final results = await simulatorAvecDelaiFactice.sendSeries(
+        category: 'sonnette',
+        score: 0.9,
+        count: 3,
+        delay: const Duration(milliseconds: 500),
+      );
+
+      expect(results, hasLength(3));
+      // count-1 délais : jamais avant le tout premier envoi.
+      expect(delaisRecus, [
+        const Duration(milliseconds: 500),
+        const Duration(milliseconds: 500),
+      ]);
+    });
+
+    test('sendSeries() avec un délai factice fait quand même avancer '
+        'l\'horodatage des événements : l\'anti-répétition se comporte '
+        'comme sur un vrai appareil, pas comme si tout arrivait au même '
+        'instant', () async {
+      // Délai factice (zéro attente réelle) mais SUPÉRIEUR au cooldown
+      // par défaut (5s) : sur un vrai appareil, les 2 événements
+      // déclencheraient tous les deux. Si l'horodatage n'avançait pas
+      // avec le délai simulé, le 2e serait à tort bloqué par
+      // l'anti-répétition.
+      final simulatorAvecDelaiFactice = EventSimulator(
+        processor: processor,
+        delay: (_) async {},
+      );
+
+      final results = await simulatorAvecDelaiFactice.sendSeries(
+        category: 'sonnette',
+        score: 0.9,
+        count: 2,
+        delay: const Duration(seconds: 6),
+      );
+
+      expect(
+        results.map((r) => r.status),
+        [SoundEventStatus.triggered, SoundEventStatus.triggered],
+      );
+    });
+
+    test('sendSeries() marque bien chaque événement comme simulé', () async {
+      final results = await simulator.sendSeries(
+        category: 'sonnette',
+        score: 0.9,
+        count: 2,
+      );
+
+      expect(results.every((r) => r.isSimulation), isTrue);
+    });
+
+    test('TEST 7 — un motif personnalisé enregistré est correctement '
+        'exécuté de bout en bout via le simulateur', () async {
+      hapticEngine.registerPattern(
+        'alarme-perso',
+        const VibrationPattern(
+          id: 'alarme-perso',
+          pulses: [
+            VibrationPulse(
+              vibrate: Duration(milliseconds: 120),
+              pauseAfter: Duration(milliseconds: 80),
+            ),
+            VibrationPulse(vibrate: Duration(milliseconds: 300)),
+          ],
+        ),
+      );
+      processor.settings.updateCategory(
+        'alarme-perso',
+        const CategorySettings(
+          enabled: true,
+          threshold: 0.5,
+          requiredConfirmations: 1,
+          cooldown: Duration(seconds: 1),
+        ),
+      );
+
+      final result = await simulator.send(SoundEvent(
+        category: 'alarme-perso',
+        score: 0.9,
+        timestamp: DateTime.now(),
+        source: 'simulation',
+        isSimulation: true,
+      ));
+
+      expect(result.status, SoundEventStatus.triggered);
+      expect(executor.vibrateCalls.single, [0, 120, 80, 300, 0]);
+    });
+  });
 }

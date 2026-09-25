@@ -1,0 +1,17 @@
+name: izahay-starter
+services:
+  android:
+    image: ghcr.io/cirruslabs/flutter:3.44.0
+    working_dir: /workspace/app
+    volumes:
+      - ./:/workspace
+      - pub-cache:/root/.pub-cache
+      - gradle-cache:/root/.gradle
+    environment:
+      PUB_CACHE: /root/.pub-cache
+      GRADLE_USER_HOME: /root/.gradle
+      CI: "true"
+    entrypoint: ["bash", "/workspace/scripts/build.sh"]
+volumes:
+  pub-cache:
+  gradle-cache:

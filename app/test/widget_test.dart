@@ -1,12 +1,18 @@
-// Test de smoke basique pour l'écran de test IZAHAY.
+// Tests de smoke basiques pour l'application IZAHAY / SENSIA.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:izahay/main.dart';
 
 void main() {
-  testWidgets('le compteur de taps s\'incrémente au clic', (tester) async {
+  testWidgets('IzahayApp se construit avec un MaterialApp', (tester) async {
     await tester.pumpWidget(const IzahayApp());
+
+    expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('le compteur de taps s\'incrémente au clic', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: TestScreen()));
 
     expect(find.text('Bouton pressé : 0 fois'), findsOneWidget);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/detection_test_screen.dart';
 
 void main() => runApp(const IzahayApp());
 
@@ -9,13 +10,14 @@ class IzahayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'IZAHAY',
+      title: 'SENSIA',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      home: const TestScreen(),
+      home: const DetectionTestScreen(),
     );
   }
 }
 
+/// Écran placeholder (compteur de taps), conservé pour le test widget.
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
 

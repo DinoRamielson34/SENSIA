@@ -27,6 +27,7 @@ class HapticPlatformException implements Exception {
   const HapticPlatformException(this.message, {this.cause});
 
   @override
-  String toString() => 'HapticPlatformException: $message'
+  String toString() =>
+      'HapticPlatformException: $message'
       '${cause != null ? ' (cause: $cause)' : ''}';
 }

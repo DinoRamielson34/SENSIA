@@ -36,12 +36,12 @@ class AudioPreprocessingService {
   void Function(AudioPreprocessingStats stats)? _onStats;
 
   AudioPreprocessingStats get stats => AudioPreprocessingStats(
-        isActive: _captureService.isRecording,
-        totalSamplesReceived: _totalSamplesReceived,
-        bufferSampleCount: _buffer.length,
-        framesProduced: _framesProduced,
-        bufferReady: _buffer.length >= samplesPerFrame,
-      );
+    isActive: _captureService.isRecording,
+    totalSamplesReceived: _totalSamplesReceived,
+    bufferSampleCount: _buffer.length,
+    framesProduced: _framesProduced,
+    bufferReady: _buffer.length >= samplesPerFrame,
+  );
 
   Future<bool> requestPermission() => _captureService.requestPermission();
 
@@ -83,11 +83,13 @@ class AudioPreprocessingService {
       _buffer.removeRange(0, hopSize);
 
       _framesProduced++;
-      _onFrame?.call(AudioFrame(
-        samples: frameSamples,
-        sampleRate: targetSampleRate,
-        numChannels: targetChannels,
-      ));
+      _onFrame?.call(
+        AudioFrame(
+          samples: frameSamples,
+          sampleRate: targetSampleRate,
+          numChannels: targetChannels,
+        ),
+      );
     }
 
     _notifyStats();

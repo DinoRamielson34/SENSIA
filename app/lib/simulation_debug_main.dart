@@ -24,7 +24,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  final hapticEngine = HapticEngine(executor: const MethodChannelVibrationExecutor());
+  final hapticEngine = HapticEngine(
+    executor: const MethodChannelVibrationExecutor(),
+  );
   final historyRepository = FirestoreHistoryRepository();
   final processor = SoundEventProcessor(
     hapticEngine: hapticEngine,
@@ -77,17 +79,20 @@ class _SimulationDebugScreenState extends State<SimulationDebugScreen> {
   /// Construit une seule fois, sur le `processor` de ce widget : c'est
   /// cette même instance qui reçoit chaque événement envoyé, jamais un
   /// second circuit de traitement.
-  late final EventSimulator _simulator =
-      EventSimulator(processor: widget.processor);
+  late final EventSimulator _simulator = EventSimulator(
+    processor: widget.processor,
+  );
 
   /// Catégories réellement configurées sur `processor` au moment de
   /// l'affichage — jamais une liste figée : si une catégorie est
   /// ajoutée à `processor.settings` après coup (voir le test dédié),
   /// elle apparaît ici dès le prochain rebuild.
-  List<String> get _knownCategories => widget.processor.settings.all.keys.toList();
+  List<String> get _knownCategories =>
+      widget.processor.settings.all.keys.toList();
 
-  late String _category =
-      _knownCategories.isNotEmpty ? _knownCategories.first : 'sonnette';
+  late String _category = _knownCategories.isNotEmpty
+      ? _knownCategories.first
+      : 'sonnette';
   double _score = 0.9;
   String _status = '';
 
@@ -102,13 +107,15 @@ class _SimulationDebugScreenState extends State<SimulationDebugScreen> {
   /// que l'écran reste utilisable même en cas de panne.
   Future<void> _send() async {
     try {
-      final result = await _simulator.send(SoundEvent(
-        category: _category,
-        score: _score,
-        timestamp: DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      ));
+      final result = await _simulator.send(
+        SoundEvent(
+          category: _category,
+          score: _score,
+          timestamp: DateTime.now(),
+          source: 'simulation',
+          isSimulation: true,
+        ),
+      );
       setState(() {
         _status = result.reason != null
             ? '${result.status.name} — ${result.reason}'

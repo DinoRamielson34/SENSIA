@@ -1,6 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:izahay/models/settings_category.dart';
 import 'package:izahay/screens/settings_screen.dart';
+
+const _categories = [
+  SettingsCategory(
+    title: 'Categorie Param 1',
+    options: [
+      SettingsOption(id: 'cat1_param1', label: 'Parametre 1'),
+      SettingsOption(id: 'cat1_param2', label: 'Parametre 2'),
+    ],
+  ),
+];
 
 void main() {
   testWidgets('un tap bascule le réglage et prévient onChanged', (
@@ -9,7 +20,10 @@ void main() {
     final changes = <String, bool>{};
     await tester.pumpWidget(
       MaterialApp(
-        home: SettingsScreen(onChanged: (id, value) => changes[id] = value),
+        home: SettingsScreen(
+          categories: _categories,
+          onChanged: (id, value) => changes[id] = value,
+        ),
       ),
     );
 

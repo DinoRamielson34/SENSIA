@@ -12,7 +12,7 @@ class HistoryResultSink implements HistorySink {
   final HistoryRepository _repository;
 
   HistoryResultSink({required HistoryRepository repository})
-      : _repository = repository;
+    : _repository = repository;
 
   /// Lève toute exception du [HistoryRepository] sous-jacent (ex:
   /// [HistoryWriteException]) — c'est à l'appelant (typiquement

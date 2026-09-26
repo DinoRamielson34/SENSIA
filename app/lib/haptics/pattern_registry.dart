@@ -13,7 +13,7 @@ class PatternRegistry {
   final Map<String, VibrationPattern> _patterns = {};
 
   PatternRegistry({PatternValidator validator = const PatternValidator()})
-      : _validator = validator {
+    : _validator = validator {
     _seedDefaults();
   }
 

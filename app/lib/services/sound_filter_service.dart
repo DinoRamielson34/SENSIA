@@ -38,16 +38,18 @@ class SoundFilterService {
       final confirmed = smoothed >= rule.threshold;
 
       // Affiche toutes les catégories (même non confirmées) pour debug
-      detections.add(SoundDetectionResult(
-        category: rule.category,
-        yamnetClass: bestClass.isEmpty
-            ? (_lastBestClass[rule.category] ?? rule.yamnetClasses.first)
-            : bestClass,
-        score: bestScore,
-        confirmed: confirmed,
-        vibrationPriority: rule.vibrationPriority,
-        timestamp: now,
-      ));
+      detections.add(
+        SoundDetectionResult(
+          category: rule.category,
+          yamnetClass: bestClass.isEmpty
+              ? (_lastBestClass[rule.category] ?? rule.yamnetClasses.first)
+              : bestClass,
+          score: bestScore,
+          confirmed: confirmed,
+          vibrationPriority: rule.vibrationPriority,
+          timestamp: now,
+        ),
+      );
     }
 
     detections.sort((a, b) {

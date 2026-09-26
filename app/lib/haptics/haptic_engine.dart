@@ -16,9 +16,9 @@ class HapticEngine {
     required VibrationExecutor executor,
     PatternRegistry? registry,
     PatternValidator? validator,
-  })  : _executor = executor,
-        _registry = registry ?? PatternRegistry(),
-        _validator = validator ?? const PatternValidator();
+  }) : _executor = executor,
+       _registry = registry ?? PatternRegistry(),
+       _validator = validator ?? const PatternValidator();
 
   /// Enregistre ou remplace le motif associé à [category]. Valide le motif
   /// avant de l'enregistrer.

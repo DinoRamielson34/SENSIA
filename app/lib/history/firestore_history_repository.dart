@@ -19,8 +19,8 @@ class FirestoreHistoryRepository implements HistoryRepository {
   FirestoreHistoryRepository({
     FirebaseFirestore? firestore,
     CurrentUser? currentUser,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _currentUser = currentUser ?? CurrentUser();
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _currentUser = currentUser ?? CurrentUser();
 
   Future<CollectionReference<Map<String, dynamic>>> _eventsCollection() async {
     final uid = await _currentUser.ensureSignedIn();
@@ -69,19 +69,16 @@ class FirestoreHistoryRepository implements HistoryRepository {
     }
     try {
       return snapshot.docs
-          .map((doc) => SoundEventRecord(
-                id: doc.id,
-                event: _eventFromMap(doc.data()),
-              ))
+          .map(
+            (doc) =>
+                SoundEventRecord(id: doc.id, event: _eventFromMap(doc.data())),
+          )
           .toList();
     } on TypeError catch (e) {
       // Un document dont la forme ne correspond plus au schéma attendu
       // (champ manquant, type changé...) ne doit jamais faire fuiter une
       // TypeError non typée hors de ce module.
-      throw HistoryReadException(
-        'Document d\'historique mal formé',
-        cause: e,
-      );
+      throw HistoryReadException('Document d\'historique mal formé', cause: e);
     }
   }
 
@@ -151,44 +148,41 @@ class FirestoreHistoryRepository implements HistoryRepository {
     try {
       return _preferencesFromMap(data);
     } on TypeError catch (e) {
-      throw HistoryReadException(
-        'Document de préférences mal formé',
-        cause: e,
-      );
+      throw HistoryReadException('Document de préférences mal formé', cause: e);
     }
   }
 
   Map<String, dynamic> _eventToMap(SoundEvent event) => {
-        'category': event.category,
-        'score': event.score,
-        'timestamp': Timestamp.fromDate(event.timestamp),
-        'source': event.source,
-        'isSimulation': event.isSimulation,
-      };
+    'category': event.category,
+    'score': event.score,
+    'timestamp': Timestamp.fromDate(event.timestamp),
+    'source': event.source,
+    'isSimulation': event.isSimulation,
+  };
 
   SoundEvent _eventFromMap(Map<String, dynamic> data) => SoundEvent(
-        category: data['category'] as String,
-        score: (data['score'] as num).toDouble(),
-        timestamp: (data['timestamp'] as Timestamp).toDate(),
-        source: data['source'] as String,
-        isSimulation: data['isSimulation'] as bool,
-      );
+    category: data['category'] as String,
+    score: (data['score'] as num).toDouble(),
+    timestamp: (data['timestamp'] as Timestamp).toDate(),
+    source: data['source'] as String,
+    isSimulation: data['isSimulation'] as bool,
+  );
 
   Map<String, dynamic> _preferencesToMap(
     Map<String, CategorySettings> preferences,
   ) {
-    return preferences.map((category, settings) => MapEntry(category, {
-          'enabled': settings.enabled,
-          'threshold': settings.threshold,
-          'requiredConfirmations': settings.requiredConfirmations,
-          // Duration n'a pas de type Firestore natif : stocké en secondes.
-          'cooldownSeconds': settings.cooldown.inSeconds,
-        }));
+    return preferences.map(
+      (category, settings) => MapEntry(category, {
+        'enabled': settings.enabled,
+        'threshold': settings.threshold,
+        'requiredConfirmations': settings.requiredConfirmations,
+        // Duration n'a pas de type Firestore natif : stocké en secondes.
+        'cooldownSeconds': settings.cooldown.inSeconds,
+      }),
+    );
   }
 
-  Map<String, CategorySettings> _preferencesFromMap(
-    Map<String, dynamic> data,
-  ) {
+  Map<String, CategorySettings> _preferencesFromMap(Map<String, dynamic> data) {
     return data.map((category, value) {
       final map = Map<String, dynamic>.from(value as Map);
       return MapEntry(

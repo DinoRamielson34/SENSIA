@@ -9,9 +9,11 @@ import 'haptics/vibration_executor.dart';
 ///
 /// Lancer avec : flutter run -t lib/haptics_debug_main.dart
 void main() {
-  runApp(HapticsDebugApp(
-    engine: HapticEngine(executor: const MethodChannelVibrationExecutor()),
-  ));
+  runApp(
+    HapticsDebugApp(
+      engine: HapticEngine(executor: const MethodChannelVibrationExecutor()),
+    ),
+  );
 }
 
 class HapticsDebugApp extends StatelessWidget {

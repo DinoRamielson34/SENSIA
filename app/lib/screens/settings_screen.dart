@@ -26,7 +26,8 @@ class SettingsController extends ChangeNotifier {
 }
 
 class SettingsScreen extends StatefulWidget {
-  final List<SettingsCategory> categories;
+  /// Réglages à afficher ; par défaut, toutes les catégories de sons.
+  final List<SettingsCategory>? categories;
   final SettingsController? controller;
 
   /// Valeurs à afficher au départ (par exemple celles d'une sauvegarde).
@@ -42,7 +43,7 @@ class SettingsScreen extends StatefulWidget {
 
   const SettingsScreen({
     super.key,
-    this.categories = SettingsCategories.placeholder,
+    this.categories,
     this.controller,
     this.initialValues = const {},
     this.onChanged,
@@ -55,16 +56,15 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late final SettingsController _controller;
+  late final List<SettingsCategory> _categories =
+      widget.categories ?? SettingsCategories.all;
 
   @override
   void initState() {
     super.initState();
     _controller =
         widget.controller ??
-        SettingsController(
-          widget.categories,
-          initialValues: widget.initialValues,
-        );
+        SettingsController(_categories, initialValues: widget.initialValues);
   }
 
   @override
@@ -91,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, _) => ListView(
                   padding: const EdgeInsets.fromLTRB(20, 96, 20, 16),
                   children: [
-                    for (final category in widget.categories) ...[
+                    for (final category in _categories) ...[
                       _CategoryHeader(title: category.title),
                       for (final option in category.options) ...[
                         const SizedBox(height: 4),

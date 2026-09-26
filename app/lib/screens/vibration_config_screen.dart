@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../haptics/haptic_engine.dart';
 import '../haptics/haptic_exceptions.dart';
 import '../haptics/models/vibration_pattern.dart';
+import '../haptics/segment_pattern.dart';
 import '../haptics/vibration_executor.dart';
 import '../models/vibration_entry.dart';
 import '../models/vibration_segment.dart';
@@ -11,11 +12,6 @@ import '../widgets/home_button.dart';
 
 /// Construit un motif en enchaînant des segments longs et courts.
 class VibrationConfigController extends ChangeNotifier {
-  // Mêmes durées de référence que HapticPatternConfig (long / court / pause).
-  static const longDuration = Duration(milliseconds: 500);
-  static const shortDuration = Duration(milliseconds: 150);
-  static const gap = Duration(milliseconds: 150);
-
   final List<VibrationSegment> _segments;
 
   VibrationConfigController([List<VibrationSegment> initial = const []])
@@ -37,21 +33,8 @@ class VibrationConfigController extends ChangeNotifier {
   }
 
   /// Motif correspondant aux segments saisis, ou null s'il n'y en a aucun.
-  VibrationPattern? toPattern(String id) {
-    if (_segments.isEmpty) return null;
-    return VibrationPattern(
-      id: id,
-      pulses: [
-        for (var i = 0; i < _segments.length; i++)
-          VibrationPulse(
-            vibrate: _segments[i] == VibrationSegment.long
-                ? longDuration
-                : shortDuration,
-            pauseAfter: i == _segments.length - 1 ? Duration.zero : gap,
-          ),
-      ],
-    );
-  }
+  VibrationPattern? toPattern(String id) =>
+      _segments.isEmpty ? null : patternFromSegments(id, _segments);
 }
 
 class VibrationConfigScreen extends StatefulWidget {

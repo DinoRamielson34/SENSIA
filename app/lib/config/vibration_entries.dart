@@ -1,17 +1,14 @@
 import '../models/vibration_entry.dart';
+import 'sound_labels.dart';
+import 'sound_priority_config.dart';
 
-/// Sons affichés par [VibrationsScreen].
-// TODO: remplacer par les catégories de [SoundPriorityConfig] ; ce sont les
-// libellés de la maquette 90:1650 (« sonnerie », « baby cry », « Text 1 »).
+/// Sons affichés par [VibrationsScreen] : toutes les catégories reconnues
+/// par l'IA, de la plus prioritaire à la moins prioritaire.
 class VibrationEntries {
   VibrationEntries._();
 
-  static const List<VibrationEntry> placeholder = [
-    VibrationEntry(id: 'sonnerie', label: 'sonnerie'),
-    VibrationEntry(id: 'baby_cry', label: 'baby cry'),
-    VibrationEntry(id: 'text_3', label: 'Text 1'),
-    VibrationEntry(id: 'text_4', label: 'Text 1'),
-    VibrationEntry(id: 'text_5', label: 'Text 1'),
-    VibrationEntry(id: 'text_6', label: 'Text 1'),
+  static final List<VibrationEntry> all = [
+    for (final rule in SoundPriorityConfig.rules)
+      VibrationEntry(id: rule.category, label: SoundLabels.of(rule.category)),
   ];
 }

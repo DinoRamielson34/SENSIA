@@ -102,8 +102,9 @@ class YamnetService {
 
     try {
       final input = Float32List(expectedSamples);
-      final copyLen =
-          frame.sampleCount < expectedSamples ? frame.sampleCount : expectedSamples;
+      final copyLen = frame.sampleCount < expectedSamples
+          ? frame.sampleCount
+          : expectedSamples;
       for (int i = 0; i < copyLen; i++) {
         input[i] = frame.samples[i];
       }
@@ -127,18 +128,17 @@ class YamnetService {
 
       final results = <YamnetResult>[];
       for (int i = 0; i < scores.length && i < _labels.length; i++) {
-        results.add(YamnetResult(
-          index: i,
-          label: _labels[i],
-          score: scores[i],
-        ));
+        results.add(
+          YamnetResult(index: i, label: _labels[i], score: scores[i]),
+        );
       }
 
       results.sort((a, b) => b.score.compareTo(a.score));
       _error = null;
       return results;
     } catch (e, st) {
-      _error = 'Inference failed: $e\n${st.toString().split('\n').take(5).join('\n')}';
+      _error =
+          'Inference failed: $e\n${st.toString().split('\n').take(5).join('\n')}';
       return [];
     }
   }
@@ -148,18 +148,13 @@ class YamnetService {
       return List<double>.filled(shape[0], 0.0);
     }
     if (shape.length == 2) {
-      return List.generate(
-        shape[0],
-        (_) => List<double>.filled(shape[1], 0.0),
-      );
+      return List.generate(shape[0], (_) => List<double>.filled(shape[1], 0.0));
     }
     if (shape.length == 3) {
       return List.generate(
         shape[0],
-        (_) => List.generate(
-          shape[1],
-          (_) => List<double>.filled(shape[2], 0.0),
-        ),
+        (_) =>
+            List.generate(shape[1], (_) => List<double>.filled(shape[2], 0.0)),
       );
     }
     return List<double>.filled(shape.reduce((a, b) => a * b), 0.0);

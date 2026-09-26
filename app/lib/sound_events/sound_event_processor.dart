@@ -47,9 +47,9 @@ class SoundEventProcessor {
     required HapticEngine hapticEngine,
     SoundEventSettings? settings,
     HistorySink? historySink,
-  })  : _hapticEngine = hapticEngine,
-        _historySink = historySink,
-        settings = settings ?? SoundEventSettings();
+  }) : _hapticEngine = hapticEngine,
+       _historySink = historySink,
+       settings = settings ?? SoundEventSettings();
 
   /// Autorise à nouveau le traitement des événements en provenance du
   /// microphone (état par défaut à la création).
@@ -151,22 +151,24 @@ class SoundEventProcessor {
       // HistorySink qui ne serait pas `async` (sink.record(result) seul
       // ne le ferait pas : l'exception s'échapperait avant même de
       // produire un Future à intercepter).
-      unawaited(Future.sync(() => sink.record(result)).catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        // Avalée pour l'appelant de process() (qui a déjà son résultat),
-        // mais journalisée : sans ça, une mauvaise config Firebase
-        // (règles non déployées, Auth anonyme désactivée...) fait
-        // silencieusement disparaître tout l'historique sans aucune
-        // trace nulle part.
-        developer.log(
-          'HistorySink.record a échoué (avalé, la vibration a déjà eu lieu)',
-          name: 'SoundEventProcessor',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }));
+      unawaited(
+        Future.sync(() => sink.record(result)).catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          // Avalée pour l'appelant de process() (qui a déjà son résultat),
+          // mais journalisée : sans ça, une mauvaise config Firebase
+          // (règles non déployées, Auth anonyme désactivée...) fait
+          // silencieusement disparaître tout l'historique sans aucune
+          // trace nulle part.
+          developer.log(
+            'HistorySink.record a échoué (avalé, la vibration a déjà eu lieu)',
+            name: 'SoundEventProcessor',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }),
+      );
     }
     return result;
   }

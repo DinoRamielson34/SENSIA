@@ -15,21 +15,21 @@ class SimulationScenarios {
   /// l'instant présent). Retourne un [SoundEvent] prêt à être envoyé à
   /// un `SoundEventProcessor` (via `EventSimulator` ou directement).
   static SoundEvent sonnette({DateTime? timestamp}) => SoundEvent(
-        category: 'sonnette',
-        score: 0.92,
-        timestamp: timestamp ?? DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      );
+    category: 'sonnette',
+    score: 0.92,
+    timestamp: timestamp ?? DateTime.now(),
+    source: 'simulation',
+    isSimulation: true,
+  );
 
   /// Scénario 2 — un aboiement, même logique que [sonnette].
   static SoundEvent aboiement({DateTime? timestamp}) => SoundEvent(
-        category: 'aboiement',
-        score: 0.9,
-        timestamp: timestamp ?? DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      );
+    category: 'aboiement',
+    score: 0.9,
+    timestamp: timestamp ?? DateTime.now(),
+    source: 'simulation',
+    isSimulation: true,
+  );
 
   /// Scénario 3 — une catégorie que le système ne connaît pas (absente
   /// de `SoundEventSettings`).
@@ -41,14 +41,13 @@ class SimulationScenarios {
   static SoundEvent unknownCategory({
     String category = 'categorie-inconnue-simulee',
     DateTime? timestamp,
-  }) =>
-      SoundEvent(
-        category: category,
-        score: 0.95,
-        timestamp: timestamp ?? DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      );
+  }) => SoundEvent(
+    category: category,
+    score: 0.95,
+    timestamp: timestamp ?? DateTime.now(),
+    source: 'simulation',
+    isSimulation: true,
+  );
 
   /// Scénario 4 — un score volontairement sous [threshold].
   ///
@@ -67,14 +66,13 @@ class SimulationScenarios {
     String category, {
     double threshold = 0.75,
     DateTime? timestamp,
-  }) =>
-      SoundEvent(
-        category: category,
-        score: (threshold - 0.1).clamp(0.0, 1.0),
-        timestamp: timestamp ?? DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      );
+  }) => SoundEvent(
+    category: category,
+    score: (threshold - 0.1).clamp(0.0, 1.0),
+    timestamp: timestamp ?? DateTime.now(),
+    source: 'simulation',
+    isSimulation: true,
+  );
 
   /// Scénario 5 — [count] événements identiques successifs (même
   /// catégorie, même score, même horodatage), utile pour tester
@@ -148,12 +146,11 @@ class SimulationScenarios {
   static SoundEvent whileListeningStopped(
     String category, {
     DateTime? timestamp,
-  }) =>
-      SoundEvent(
-        category: category,
-        score: 0.9,
-        timestamp: timestamp ?? DateTime.now(),
-        source: 'microphone',
-        isSimulation: false,
-      );
+  }) => SoundEvent(
+    category: category,
+    score: 0.9,
+    timestamp: timestamp ?? DateTime.now(),
+    source: 'microphone',
+    isSimulation: false,
+  );
 }

@@ -31,10 +31,12 @@ class HapticPatternConfig {
     final pulses = <VibrationPulse>[];
     for (var i = 0; i < durations.length; i++) {
       final isLast = i == durations.length - 1;
-      pulses.add(VibrationPulse(
-        vibrate: durations[i],
-        pauseAfter: isLast ? Duration.zero : _gap,
-      ));
+      pulses.add(
+        VibrationPulse(
+          vibrate: durations[i],
+          pauseAfter: isLast ? Duration.zero : _gap,
+        ),
+      );
     }
     return VibrationPattern(id: id, pulses: pulses);
   }
@@ -52,14 +54,26 @@ class HapticPatternConfig {
     'baby_cry': _pattern('baby_cry', [_long, _short, _long]),
     // Alertes (alternance courte / longue)
     'alarm': _pattern('alarm', [_short, _long, _short, _long]),
-    'emergency_siren':
-        _pattern('emergency_siren', [_short, _long, _short, _long, _short, _long]),
+    'emergency_siren': _pattern('emergency_siren', [
+      _short,
+      _long,
+      _short,
+      _long,
+      _short,
+      _long,
+    ]),
     'car_alarm': _pattern('car_alarm', [_long, _long]),
     'car_horn': _pattern('car_horn', [_xLong]), // 1 très longue
     // Dangers : vibrations les plus marquées
     'smoke_alarm': _pattern('smoke_alarm', [_medium, _medium, _medium]),
-    'fire_alarm': _pattern(
-        'fire_alarm', [_short, _short, _short, _short, _short, _short]),
+    'fire_alarm': _pattern('fire_alarm', [
+      _short,
+      _short,
+      _short,
+      _short,
+      _short,
+      _short,
+    ]),
     'train': _pattern('train', [_xLong, _short, _short]),
   };
 

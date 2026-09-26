@@ -23,8 +23,5 @@ class VibrationPattern {
   final String id;
   final List<VibrationPulse> pulses;
 
-  const VibrationPattern({
-    required this.id,
-    required this.pulses,
-  });
+  const VibrationPattern({required this.id, required this.pulses});
 }

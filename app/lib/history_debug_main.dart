@@ -52,16 +52,18 @@ class _HistoryDebugScreenState extends State<HistoryDebugScreen> {
 
   Future<void> _addTestEvent() async {
     final id = widget.repository.newEventId();
-    await widget.repository.saveEvent(SoundEventRecord(
-      id: id,
-      event: SoundEvent(
-        category: 'sonnette',
-        score: 0.9,
-        timestamp: DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
+    await widget.repository.saveEvent(
+      SoundEventRecord(
+        id: id,
+        event: SoundEvent(
+          category: 'sonnette',
+          score: 0.9,
+          timestamp: DateTime.now(),
+          source: 'simulation',
+          isSimulation: true,
+        ),
       ),
-    ));
+    );
     setState(() => _status = 'Événement ajouté ($id)');
     await _refresh();
   }
@@ -96,10 +98,7 @@ class _HistoryDebugScreenState extends State<HistoryDebugScreen> {
                   onPressed: _refresh,
                   child: const Text('Rafraîchir'),
                 ),
-                OutlinedButton(
-                  onPressed: _clear,
-                  child: const Text('Effacer'),
-                ),
+                OutlinedButton(onPressed: _clear, child: const Text('Effacer')),
               ],
             ),
           ),

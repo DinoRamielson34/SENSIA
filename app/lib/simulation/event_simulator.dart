@@ -27,8 +27,8 @@ class EventSimulator {
   EventSimulator({
     required SoundEventProcessor processor,
     Future<void> Function(Duration duration)? delay,
-  })  : _processor = processor,
-        _delay = delay ?? _realDelay;
+  }) : _processor = processor,
+       _delay = delay ?? _realDelay;
 
   /// Implémentation par défaut de la temporisation : une vraie attente.
   /// Utilisée quand aucune fonction de délai n'est injectée au
@@ -91,13 +91,15 @@ class EventSimulator {
       if (i > 0 && delay > Duration.zero) {
         await _delay(delay);
       }
-      final result = await send(SoundEvent(
-        category: category,
-        score: score,
-        timestamp: start.add(delay * i),
-        source: source,
-        isSimulation: true,
-      ));
+      final result = await send(
+        SoundEvent(
+          category: category,
+          score: score,
+          timestamp: start.add(delay * i),
+          source: source,
+          isSimulation: true,
+        ),
+      );
       results.add(result);
     }
     return results;

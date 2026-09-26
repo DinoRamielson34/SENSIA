@@ -6,14 +6,13 @@ import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
 
 class VibrationsScreen extends StatelessWidget {
-  final List<VibrationEntry> entries;
+  /// Sons à afficher ; par défaut, toutes les catégories reconnues.
+  final List<VibrationEntry>? entries;
 
-  /// Bouton « ondes » d'une carte.
-  // TODO: brancher sur SoundHapticPipeline.testVibration(category).
+  /// Bouton « ondes » d'une carte : fait vibrer le motif actuel du son.
   final void Function(VibrationEntry entry)? onPattern;
 
-  /// Bouton « engrenage » d'une carte.
-  // TODO: ouvrir le réglage détaillé de ce son.
+  /// Bouton « engrenage » d'une carte : réglage détaillé du motif.
   final void Function(VibrationEntry entry)? onSettings;
 
   /// Appelé au tap sur « home » ; par défaut, revient en arrière.
@@ -21,7 +20,7 @@ class VibrationsScreen extends StatelessWidget {
 
   const VibrationsScreen({
     super.key,
-    this.entries = VibrationEntries.placeholder,
+    this.entries,
     this.onPattern,
     this.onSettings,
     this.onHome,
@@ -41,7 +40,7 @@ class VibrationsScreen extends StatelessWidget {
                 crossAxisSpacing: 48,
                 padding: const EdgeInsets.fromLTRB(20, 96, 20, 16),
                 children: [
-                  for (final entry in entries)
+                  for (final entry in entries ?? VibrationEntries.all)
                     _VibrationCard(
                       entry: entry,
                       onPattern: () => onPattern?.call(entry),
@@ -100,7 +99,7 @@ class _VibrationCard extends StatelessWidget {
                     padding: const EdgeInsets.all(10),
                     child: Text(
                       entry.label,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontFamily: 'Nunito',

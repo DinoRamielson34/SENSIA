@@ -50,15 +50,16 @@ class SoundHapticPipeline extends ChangeNotifier {
     AudioPreprocessingService? audioService,
     YamnetService? yamnetService,
     SoundFilterService? filterService,
-  })  : _hapticEngine = hapticEngine,
-        _processor = processor ??
-            SoundEventProcessor(
-              hapticEngine: hapticEngine,
-              settings: HapticPatternConfig.buildSettings(),
-            ),
-        _audioService = audioService ?? AudioPreprocessingService(),
-        _yamnetService = yamnetService ?? YamnetService(),
-        _filterService = filterService ?? SoundFilterService() {
+  }) : _hapticEngine = hapticEngine,
+       _processor =
+           processor ??
+           SoundEventProcessor(
+             hapticEngine: hapticEngine,
+             settings: HapticPatternConfig.buildSettings(),
+           ),
+       _audioService = audioService ?? AudioPreprocessingService(),
+       _yamnetService = yamnetService ?? YamnetService(),
+       _filterService = filterService ?? SoundFilterService() {
     HapticPatternConfig.registerAll(hapticEngine);
     _processor.stopListening();
     _initForegroundTask();
@@ -254,13 +255,15 @@ class SoundHapticPipeline extends ChangeNotifier {
   /// Retourne le résultat du traitement, aussi stocké dans [lastResult].
   /// Effets de bord : peut faire vibrer, notifie l'interface.
   Future<SoundEventResult> simulate(String category, double score) async {
-    final result = await _processor.process(SoundEvent(
-      category: category,
-      score: score,
-      timestamp: DateTime.now(),
-      source: 'simulation',
-      isSimulation: true,
-    ));
+    final result = await _processor.process(
+      SoundEvent(
+        category: category,
+        score: score,
+        timestamp: DateTime.now(),
+        source: 'simulation',
+        isSimulation: true,
+      ),
+    );
     _lastResult = result;
     if (result.status == SoundEventStatus.triggered) _lastTriggered = result;
     notifyListeners();
@@ -311,9 +314,22 @@ class SoundHapticPipeline extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Motifs choisis par l'utilisateur, prioritaires sur ceux de la config.
+  final Map<String, VibrationPattern> _customPatterns = {};
+
   /// Motif de vibration associé à [category], ou null s'il n'y en a pas.
   VibrationPattern? patternFor(String category) =>
-      HapticPatternConfig.patterns[category];
+      _customPatterns[category] ?? HapticPatternConfig.patterns[category];
+
+  /// Remplace le motif joué pour [category], à la détection comme au test.
+  ///
+  /// Lève `InvalidVibrationPatternException` si [pattern] est invalide.
+  /// Effet de bord : notifie l'interface.
+  void setCategoryPattern(String category, VibrationPattern pattern) {
+    _hapticEngine.registerPattern(category, pattern);
+    _customPatterns[category] = pattern;
+    notifyListeners();
+  }
 
   @override
   void dispose() {

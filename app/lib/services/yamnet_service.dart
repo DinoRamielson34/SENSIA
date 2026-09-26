@@ -26,6 +26,8 @@ class YamnetService {
   String? _error;
   List<int> _inputShape = [];
   List<int> _outputShape = [];
+  int _numOutputs = 0;
+  List<List<int>> _allOutputShapes = [];
 
   bool get isLoaded => _isLoaded;
   String? get error => _error;
@@ -36,13 +38,27 @@ class YamnetService {
   Future<void> loadModel() async {
     try {
       final modelData = await rootBundle.load(modelAsset);
-      _interpreter = Interpreter.fromBuffer(modelData.buffer.asUint8List());
-
-      _interpreter!.resizeInputTensor(0, [expectedSamples]);
-      _interpreter!.allocateTensors();
+      // Extract only the model bytes — rootBundle may share a larger buffer
+      final bytes = Uint8List.fromList(
+        modelData.buffer.asUint8List(
+          modelData.offsetInBytes,
+          modelData.lengthInBytes,
+        ),
+      );
+      _interpreter = Interpreter.fromBuffer(bytes);
 
       _inputShape = _interpreter!.getInputTensor(0).shape;
-      _outputShape = _interpreter!.getOutputTensor(0).shape;
+
+      // Store ALL output tensor shapes — YAMNet has 3 outputs
+      final outputTensors = _interpreter!.getOutputTensors();
+      _numOutputs = outputTensors.length;
+      _allOutputShapes = [];
+      for (int i = 0; i < _numOutputs; i++) {
+        _allOutputShapes.add(
+          List<int>.from(_interpreter!.getOutputTensor(i).shape),
+        );
+      }
+      _outputShape = _allOutputShapes.isNotEmpty ? _allOutputShapes[0] : [];
 
       final csvData = await rootBundle.loadString(labelsAsset);
       _labels = _parseLabels(csvData);
@@ -92,16 +108,18 @@ class YamnetService {
         input[i] = frame.samples[i];
       }
 
-      final numOutputs = _interpreter!.getOutputTensors().length;
-      final outputMap = <int, Object>{};
-      for (int i = 0; i < numOutputs; i++) {
-        final shape = _interpreter!.getOutputTensor(i).shape;
-        outputMap[i] = _allocateOutput(shape);
-      }
+      // Use runInference + direct tensor read to bypass tflite_flutter's
+      // broken copyTo shape check (YAMNet secondary outputs have wrong
+      // metadata shapes that only resolve after inference runs)
+      _interpreter!.runInference([input]);
 
-      _interpreter!.runForMultipleInputs([input], outputMap);
-
-      final scores = _extractScores(outputMap[0]!);
+      final outputData = _interpreter!.getOutputTensor(0).data;
+      final byteData = ByteData.sublistView(outputData);
+      final numScores = outputData.length ~/ 4;
+      final scores = List<double>.generate(
+        numScores,
+        (i) => byteData.getFloat32(i * 4, Endian.little),
+      );
       if (scores.isEmpty) {
         _error = 'No scores returned from model';
         return [];
@@ -119,8 +137,8 @@ class YamnetService {
       results.sort((a, b) => b.score.compareTo(a.score));
       _error = null;
       return results;
-    } catch (e) {
-      _error = 'Inference failed: $e';
+    } catch (e, st) {
+      _error = 'Inference failed: $e\n${st.toString().split('\n').take(5).join('\n')}';
       return [];
     }
   }

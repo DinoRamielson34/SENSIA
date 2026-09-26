@@ -8,8 +8,8 @@ class SoundRule {
   const SoundRule({
     required this.category,
     required this.yamnetClasses,
-    this.threshold = 0.30,
-    this.alpha = 0.4,
+    this.threshold = 0.15,
+    this.alpha = 0.3,
     required this.vibrationPriority,
   });
 }

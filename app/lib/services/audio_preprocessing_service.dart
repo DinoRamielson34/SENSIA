@@ -24,8 +24,9 @@ class AudioPreprocessingService {
 
   static const int targetSampleRate = 16000;
   static const int targetChannels = 1;
-  static const int samplesPerFrame = 16000;
-  static const int maxBufferSamples = samplesPerFrame * 3;
+  static const int samplesPerFrame = 15600;
+  static const int hopSize = 4000;
+  static const int maxBufferSamples = samplesPerFrame * 2;
 
   final List<double> _buffer = [];
   int _totalSamplesReceived = 0;
@@ -79,7 +80,7 @@ class AudioPreprocessingService {
       for (int i = 0; i < samplesPerFrame; i++) {
         frameSamples[i] = _buffer[i];
       }
-      _buffer.removeRange(0, samplesPerFrame);
+      _buffer.removeRange(0, hopSize);
 
       _framesProduced++;
       _onFrame?.call(AudioFrame(

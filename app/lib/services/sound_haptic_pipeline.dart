@@ -84,6 +84,13 @@ class SoundHapticPipeline extends ChangeNotifier {
   /// Réglages par catégorie (seuil, activation, anti-répétition).
   SoundEventSettings get settings => _processor.settings;
 
+  /// Score EMA lissé pour [category] (0.0 à 1.0).
+  double getEma(String category) => _filterService.getEma(category);
+
+  /// Dernières détections (toutes catégories) du dernier frame audio.
+  List<SoundDetectionResult> get lastDetections => _lastDetections;
+  List<SoundDetectionResult> _lastDetections = [];
+
   /// Charge le modèle YAMNet.
   ///
   /// Effets de bord : met à jour [modelLoading], [modelReady] et [error],
@@ -159,7 +166,14 @@ class SoundHapticPipeline extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    unawaited(handleDetections(_filterService.processResults(yamnetResults)));
+    final detections = _filterService.processResults(yamnetResults);
+    _lastDetections = detections;
+    _error = null;
+    notifyListeners();
+    final confirmed = detections.where((d) => d.confirmed).toList();
+    if (confirmed.isNotEmpty) {
+      unawaited(handleDetections(confirmed));
+    }
   }
 
   /// Transmet au processor les détections confirmées d'une image audio.

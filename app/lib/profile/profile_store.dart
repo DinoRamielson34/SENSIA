@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 
@@ -16,6 +17,8 @@ enum ProfileSyncResult {
   /// Firebase n'a pas pu être initialisé : pas de dépôt disponible.
   unavailable,
   failed,
+  authFailed,
+  permissionDenied,
 }
 
 /// Profil courant, partagé entre les écrans, avec sauvegarde / restauration
@@ -91,8 +94,9 @@ class ProfileStore extends ChangeNotifier {
       await repository.saveProfile(_profile);
       _autosaveReady = true;
       return ProfileSyncResult.saved;
-    } on Exception {
-      return ProfileSyncResult.failed;
+    } on Exception catch (e) {
+      developer.log('Save failed', name: 'ProfileStore', error: e);
+      return _classifyError(e);
     } finally {
       _setBusy(false);
     }
@@ -110,8 +114,9 @@ class ProfileStore extends ChangeNotifier {
       _profile = fetched;
       onRestored?.call();
       return ProfileSyncResult.restored;
-    } on Exception {
-      return ProfileSyncResult.failed;
+    } on Exception catch (e) {
+      developer.log('Restore failed', name: 'ProfileStore', error: e);
+      return _classifyError(e);
     } finally {
       _setBusy(false);
     }
@@ -148,6 +153,18 @@ class ProfileStore extends ChangeNotifier {
     _disposed = true;
     _autosaveTimer?.cancel();
     super.dispose();
+  }
+
+  static ProfileSyncResult _classifyError(Exception e) {
+    final msg = e.toString();
+    if (msg.contains('operation-not-allowed') ||
+        msg.contains('signInAnonymously')) {
+      return ProfileSyncResult.authFailed;
+    }
+    if (msg.contains('permission-denied')) {
+      return ProfileSyncResult.permissionDenied;
+    }
+    return ProfileSyncResult.failed;
   }
 
   void _setBusy(bool value) {

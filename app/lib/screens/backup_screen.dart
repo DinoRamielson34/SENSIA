@@ -30,7 +30,11 @@ class _BackupScreenState extends State<BackupScreen> {
     ProfileSyncResult.saved => 'Données sauvegardées.',
     ProfileSyncResult.restored => 'Données restaurées.',
     ProfileSyncResult.nothingToRestore => 'Aucune sauvegarde trouvée.',
-    ProfileSyncResult.unavailable => 'Sauvegarde indisponible.',
+    ProfileSyncResult.unavailable => 'Sauvegarde indisponible (pas de Firebase).',
+    ProfileSyncResult.authFailed =>
+      'Authentification échouée. Activez l\'auth anonyme dans Firebase Console.',
+    ProfileSyncResult.permissionDenied =>
+      'Accès refusé. Vérifiez les règles Firestore.',
     ProfileSyncResult.failed => 'Échec, réessayez plus tard.',
   };
 

@@ -12,6 +12,7 @@ import '../models/sound_detection_result.dart';
 import '../sound_events/category_settings.dart';
 import '../sound_events/sound_event.dart';
 import '../sound_events/sound_event_processor.dart';
+import '../sound_events/history_sink.dart';
 import '../sound_events/sound_event_result.dart';
 import 'audio_preprocessing_service.dart';
 import 'sound_filter_service.dart';
@@ -47,6 +48,7 @@ class SoundHapticPipeline extends ChangeNotifier {
   SoundHapticPipeline({
     required HapticEngine hapticEngine,
     SoundEventProcessor? processor,
+    HistorySink? historySink,
     AudioPreprocessingService? audioService,
     YamnetService? yamnetService,
     SoundFilterService? filterService,
@@ -56,6 +58,7 @@ class SoundHapticPipeline extends ChangeNotifier {
            SoundEventProcessor(
              hapticEngine: hapticEngine,
              settings: HapticPatternConfig.buildSettings(),
+             historySink: historySink,
            ),
        _audioService = audioService ?? AudioPreprocessingService(),
        _yamnetService = yamnetService ?? YamnetService(),

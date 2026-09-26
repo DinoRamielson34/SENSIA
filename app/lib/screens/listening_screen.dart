@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../haptics/haptic_engine.dart';
 import '../haptics/vibration_executor.dart';
 import '../services/sound_haptic_pipeline.dart';
+import '../sound_events/sound_event_result.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_menu.dart';
 
@@ -67,6 +68,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 _StatusBar(
                   errorActive: _pipeline.error != null,
                   listening: _pipeline.isListening,
+                ),
+                const SizedBox(height: 16),
+                _DetectedSoundBanner(
+                  triggered: _pipeline.lastTriggered,
                 ),
                 const Spacer(),
                 Row(
@@ -215,6 +220,122 @@ class _PlayButton extends StatelessWidget {
                         : Colors.black,
                   ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetectedSoundBanner extends StatelessWidget {
+  final SoundEventResult? triggered;
+
+  const _DetectedSoundBanner({required this.triggered});
+
+  static const _categoryIcons = <String, IconData>{
+    'train': Icons.train,
+    'fire_alarm': Icons.local_fire_department,
+    'smoke_alarm': Icons.warning_amber,
+    'car_horn': Icons.directions_car,
+    'emergency_siren': Icons.emergency,
+    'car_alarm': Icons.car_crash,
+    'baby_cry': Icons.child_care,
+    'alarm': Icons.notification_important,
+    'doorbell': Icons.doorbell,
+    'door_knock': Icons.door_front_door,
+    'telephone': Icons.phone_in_talk,
+    'alarm_clock': Icons.alarm,
+    'dog_bark': Icons.pets,
+  };
+
+  static const _categoryLabels = <String, String>{
+    'train': 'TRAIN',
+    'fire_alarm': 'ALARME INCENDIE',
+    'smoke_alarm': 'DETECTEUR DE FUMEE',
+    'car_horn': 'KLAXON',
+    'emergency_siren': 'SIRENE D\'URGENCE',
+    'car_alarm': 'ALARME VOITURE',
+    'baby_cry': 'PLEURS DE BEBE',
+    'alarm': 'ALARME',
+    'doorbell': 'SONNETTE',
+    'door_knock': 'FRAPPE A LA PORTE',
+    'telephone': 'TELEPHONE',
+    'alarm_clock': 'REVEIL',
+    'dog_bark': 'ABOIEMENT',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    if (triggered == null) {
+      return Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'Aucun son detecte',
+            style: TextStyle(
+              color: AppColors.disabled,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      );
+    }
+    final category = triggered!.event.category;
+    final icon = _categoryIcons[category] ?? Icons.volume_up;
+    final label = _categoryLabels[category] ?? category.toUpperCase();
+    final score = (triggered!.event.score * 100).round();
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        key: ValueKey('${category}_${triggered!.event.timestamp}'),
+        height: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD32F2F),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x40D32F2F),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 36, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Confiance : $score %',
+                    style: const TextStyle(
+                      color: Color(0xCCFFFFFF),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.vibration, size: 30, color: Colors.white),
+          ],
         ),
       ),
     );

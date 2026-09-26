@@ -8,11 +8,14 @@ import 'firebase_options.dart';
 import 'haptics/haptic_engine.dart';
 import 'haptics/segment_pattern.dart';
 import 'haptics/vibration_executor.dart';
+import 'history/firestore_history_repository.dart';
+import 'history/history_result_sink.dart';
 import 'models/vibration_entry.dart';
 import 'models/vibration_segment.dart';
 import 'profile/firestore_profile_repository.dart';
 import 'profile/profile_repository.dart';
 import 'profile/profile_store.dart';
+import 'sound_events/history_sink.dart';
 import 'screens/associations_screen.dart';
 import 'screens/backup_screen.dart';
 import 'screens/listening_screen.dart';
@@ -26,26 +29,41 @@ import 'services/sound_haptic_pipeline.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   ProfileRepository? profileRepository;
+  HistorySink? historySink;
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     profileRepository = FirestoreProfileRepository();
+    historySink = HistoryResultSink(
+      repository: FirestoreHistoryRepository(),
+    );
   } on Exception {
     // Sans Firebase l'app reste utilisable : la sauvegarde signale seulement
     // qu'elle est indisponible.
   }
-  runApp(IzahayApp(profileRepository: profileRepository));
+  runApp(IzahayApp(
+    profileRepository: profileRepository,
+    historySink: historySink,
+  ));
 }
 
 class IzahayApp extends StatefulWidget {
   /// Dépôt du profil ; null quand Firebase n'est pas disponible (et en test).
   final ProfileRepository? profileRepository;
 
+  /// Sink d'historique ; null quand Firebase n'est pas disponible.
+  final HistorySink? historySink;
+
   /// Pipeline partagé par tous les écrans ; créé par l'app s'il est absent.
   final SoundHapticPipeline? pipeline;
 
-  const IzahayApp({super.key, this.profileRepository, this.pipeline});
+  const IzahayApp({
+    super.key,
+    this.profileRepository,
+    this.historySink,
+    this.pipeline,
+  });
 
   @override
   State<IzahayApp> createState() => _IzahayAppState();
@@ -68,6 +86,7 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
           hapticEngine: HapticEngine(
             executor: const MethodChannelVibrationExecutor(),
           ),
+          historySink: widget.historySink,
         );
     _profile = ProfileStore(
       repository: widget.profileRepository,

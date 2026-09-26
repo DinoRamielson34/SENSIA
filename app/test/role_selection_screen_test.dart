@@ -13,13 +13,13 @@ void main() {
     );
 
     expect(find.text('Êtes-vous...'), findsOneWidget);
-    await tester.tap(find.text('Suivants'));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     await tester.pump();
     expect(result, isNull);
 
     await tester.tap(find.text('Client'));
     await tester.pump();
-    await tester.tap(find.text('Suivants'));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     expect(result, UserRole.client);
   });
 }

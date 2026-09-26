@@ -6,6 +6,7 @@ import '../services/sound_haptic_pipeline.dart';
 import '../sound_events/sound_event_result.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_menu.dart';
+import '../widgets/wave_decor.dart';
 
 /// Écran principal : démarre / arrête l'écoute du pipeline son → haptique.
 class ListeningScreen extends StatefulWidget {
@@ -34,6 +35,15 @@ class ListeningScreen extends StatefulWidget {
 class _ListeningScreenState extends State<ListeningScreen> {
   late final SoundHapticPipeline _pipeline;
 
+  // Les deux derniers sons déclenchés, du plus récent au plus ancien (cartes I et II).
+  final List<SoundEventResult> _recent = [];
+
+  void _track(SoundEventResult? result) {
+    if (result == null || _recent.any((r) => identical(r, result))) return;
+    _recent.insert(0, result);
+    if (_recent.length > 2) _recent.removeLast();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,124 +67,125 @@ class _ListeningScreenState extends State<ListeningScreen> {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _pipeline,
-      builder: (context, _) => Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                const SizedBox(height: 28),
-                _StatusBar(
-                  errorActive: _pipeline.error != null,
-                  listening: _pipeline.isListening,
-                ),
-                const SizedBox(height: 16),
-                _DetectedSoundBanner(
-                  triggered: _pipeline.lastTriggered,
-                ),
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const _ToolBar(),
-                    const SizedBox(width: 20),
-                    _PlayButton(
-                      listening: _pipeline.isListening,
-                      loading: _pipeline.modelLoading,
-                      onPressed: !_pipeline.modelReady
-                          ? null
-                          : _pipeline.isListening
-                          ? _pipeline.stop
-                          : _pipeline.start,
-                    ),
-                  ],
-                ),
-                if (_pipeline.error != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _pipeline.error!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).colorScheme.error,
+      builder: (context, _) {
+        _track(_pipeline.lastTriggered);
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: Stack(
+            children: [
+              const Positioned.fill(child: WaveDecor()),
+              SafeArea(
+                child: LayoutBuilder(
+                  // Défilement de secours : le contenu (≈780 px) dépasse les petits écrans.
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(child: _buildContent(context)),
                     ),
                   ),
-                ],
-                const Spacer(),
-                HomeMenu(
-                  onAssociation: widget.onAssociation,
-                  onHelp: widget.onHelp,
-                  onSettings: widget.onSettings,
-                  onBackup: widget.onBackup,
                 ),
-                const SizedBox(height: 8),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
-}
 
-/// Bandeau sombre : quatre indicateurs, éteints tant qu'il n'y a rien à signaler.
-class _StatusBar extends StatelessWidget {
-  final bool errorActive;
-  final bool listening;
-
-  const _StatusBar({required this.errorActive, required this.listening});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: brancher wifi/synchro quand une source de connectivité existera.
-    Color color(bool on) =>
-        on ? AppColors.statusIconOn : AppColors.statusIconOff;
-    return Container(
-      height: 50,
+  Widget _buildContent(BuildContext context) {
+    final error = _pipeline.error;
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: AppColors.statusBar,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          Icon(Icons.wifi_off, size: 30, color: color(false)),
-          Icon(Icons.sync_disabled, size: 30, color: color(false)),
-          Icon(
-            Icons.warning_amber_rounded,
-            size: 30,
-            color: color(errorActive),
+          const SizedBox(height: 78),
+          const _ToolBar(),
+          const SizedBox(height: 23),
+          _PlayButton(
+            listening: _pipeline.isListening,
+            loading: _pipeline.modelLoading,
+            onPressed: !_pipeline.modelReady
+                ? null
+                : _pipeline.isListening
+                ? _pipeline.stop
+                : _pipeline.start,
           ),
-          Icon(Icons.graphic_eq, size: 30, color: color(listening)),
+          const SizedBox(height: 7),
+          SizedBox(
+            width: 320,
+            height: 138,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  _SoundCard(
+                    rank: 'I',
+                    result: _recent.isNotEmpty ? _recent[0] : null,
+                  ),
+                  const SizedBox(width: 8),
+                  _SoundCard(
+                    rank: 'II',
+                    result: _recent.length > 1 ? _recent[1] : null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                error,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+          const Spacer(),
+          HomeMenu(
+            onAssociation: widget.onAssociation,
+            onHelp: widget.onHelp,
+            onSettings: widget.onSettings,
+            onBackup: widget.onBackup,
+          ),
+          const SizedBox(height: 18),
         ],
       ),
     );
   }
 }
 
-/// Colonne de raccourcis (wifi, synchro, son, bluetooth).
+/// Barre de raccourcis horizontale (wifi, synchro, son, bluetooth).
 class _ToolBar extends StatelessWidget {
   const _ToolBar();
 
   @override
   Widget build(BuildContext context) {
     // TODO: relier chaque raccourci à son réglage quand il existera.
-    const icons = [Icons.wifi, Icons.sync, Icons.graphic_eq, Icons.bluetooth];
+    const icons = [
+      (Icons.wifi, 48.0),
+      (Icons.sync, 50.0),
+      (Icons.graphic_eq, 50.0),
+      (Icons.bluetooth, 48.0),
+    ];
     return Container(
-      width: 50,
-      height: 322,
+      width: 320,
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          for (final icon in icons)
+          for (final (icon, width) in icons)
             SizedBox(
-              height: 50,
+              width: width,
               child: Icon(icon, size: 30, color: Colors.black),
             ),
         ],
@@ -203,21 +214,25 @@ class _PlayButton extends StatelessWidget {
         onTap: onPressed,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          width: 220,
-          height: 220,
+          width: 300,
+          height: 300,
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.primary),
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.hover),
+            boxShadow: const [
+              BoxShadow(color: AppColors.hover, offset: Offset(4, 4)),
+            ],
           ),
           child: Center(
             child: loading
-                ? const CircularProgressIndicator(color: AppColors.primary)
+                ? const CircularProgressIndicator(color: AppColors.background)
                 : Icon(
                     listening ? Icons.stop_rounded : Icons.play_arrow_outlined,
                     size: 60,
                     color: onPressed == null
                         ? AppColors.disabled
-                        : Colors.black,
+                        : AppColors.background,
                   ),
           ),
         ),
@@ -226,117 +241,126 @@ class _PlayButton extends StatelessWidget {
   }
 }
 
-class _DetectedSoundBanner extends StatelessWidget {
-  final SoundEventResult? triggered;
+const _categoryIcons = <String, IconData>{
+  'train': Icons.train,
+  'fire_alarm': Icons.local_fire_department,
+  'smoke_alarm': Icons.warning_amber,
+  'car_horn': Icons.directions_car,
+  'emergency_siren': Icons.emergency,
+  'car_alarm': Icons.car_crash,
+  'baby_cry': Icons.child_care,
+  'alarm': Icons.notification_important,
+  'doorbell': Icons.doorbell,
+  'door_knock': Icons.door_front_door,
+  'telephone': Icons.phone_in_talk,
+  'alarm_clock': Icons.alarm,
+  'dog_bark': Icons.pets,
+};
 
-  const _DetectedSoundBanner({required this.triggered});
+const _categoryLabels = <String, String>{
+  'train': 'Train',
+  'fire_alarm': 'Alarme incendie',
+  'smoke_alarm': 'Détecteur de fumée',
+  'car_horn': 'Klaxon',
+  'emergency_siren': 'Sirène d\'urgence',
+  'car_alarm': 'Alarme voiture',
+  'baby_cry': 'Pleurs de bébé',
+  'alarm': 'Alarme',
+  'doorbell': 'Sonnette',
+  'door_knock': 'Frappe à la porte',
+  'telephone': 'Téléphone',
+  'alarm_clock': 'Réveil',
+  'dog_bark': 'Aboiement',
+};
 
-  static const _categoryIcons = <String, IconData>{
-    'train': Icons.train,
-    'fire_alarm': Icons.local_fire_department,
-    'smoke_alarm': Icons.warning_amber,
-    'car_horn': Icons.directions_car,
-    'emergency_siren': Icons.emergency,
-    'car_alarm': Icons.car_crash,
-    'baby_cry': Icons.child_care,
-    'alarm': Icons.notification_important,
-    'doorbell': Icons.doorbell,
-    'door_knock': Icons.door_front_door,
-    'telephone': Icons.phone_in_talk,
-    'alarm_clock': Icons.alarm,
-    'dog_bark': Icons.pets,
-  };
+/// Carte d'un son détecté ; [rank] vaut « I » (le plus récent) ou « II ».
+class _SoundCard extends StatelessWidget {
+  final String rank;
+  final SoundEventResult? result;
 
-  static const _categoryLabels = <String, String>{
-    'train': 'TRAIN',
-    'fire_alarm': 'ALARME INCENDIE',
-    'smoke_alarm': 'DETECTEUR DE FUMEE',
-    'car_horn': 'KLAXON',
-    'emergency_siren': 'SIRENE D\'URGENCE',
-    'car_alarm': 'ALARME VOITURE',
-    'baby_cry': 'PLEURS DE BEBE',
-    'alarm': 'ALARME',
-    'doorbell': 'SONNETTE',
-    'door_knock': 'FRAPPE A LA PORTE',
-    'telephone': 'TELEPHONE',
-    'alarm_clock': 'REVEIL',
-    'dog_bark': 'ABOIEMENT',
-  };
+  const _SoundCard({required this.rank, required this.result});
 
   @override
   Widget build(BuildContext context) {
-    if (triggered == null) {
-      return Container(
-        height: 80,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(
-          child: Text(
-            'Aucun son detecte',
-            style: TextStyle(
-              color: AppColors.disabled,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      );
-    }
-    final category = triggered!.event.category;
-    final icon = _categoryIcons[category] ?? Icons.volume_up;
-    final label = _categoryLabels[category] ?? category.toUpperCase();
-    final score = (triggered!.event.score * 100).round();
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: Container(
-        key: ValueKey('${category}_${triggered!.event.timestamp}'),
-        height: 80,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFD32F2F),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x40D32F2F),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 36, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Confiance : $score %',
-                    style: const TextStyle(
-                      color: Color(0xCCFFFFFF),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+    final category = result?.event.category;
+    final icon = category == null
+        ? null
+        : _categoryIcons[category] ?? Icons.volume_up;
+    final label = category == null
+        ? 'Aucun son'
+        : _categoryLabels[category] ?? category;
+    return Container(
+      width: 154,
+      height: 130,
+      decoration: BoxDecoration(
+        color: AppColors.hover,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: AppColors.primary),
+        boxShadow: const [
+          BoxShadow(color: AppColors.primary, offset: Offset(4, 4)),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 3,
+            right: 5,
+            child: Container(
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black),
+              ),
+              child: Text(
+                rank,
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w200,
+                  color: Colors.black,
+                ),
               ),
             ),
-            const Icon(Icons.vibration, size: 30, color: Colors.white),
-          ],
-        ),
+          ),
+          Positioned(
+            left: 4,
+            top: 50,
+            width: 144,
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary),
+                  ),
+                  child: icon == null
+                      ? null
+                      : Icon(icon, size: 24, color: Colors.black),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Text(
+                      label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

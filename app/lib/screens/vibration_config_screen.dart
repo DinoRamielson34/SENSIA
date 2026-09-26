@@ -9,6 +9,7 @@ import '../models/vibration_entry.dart';
 import '../models/vibration_segment.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/wave_decor.dart';
 
 /// Construit un motif en enchaînant des segments longs et courts.
 class VibrationConfigController extends ChangeNotifier {
@@ -116,7 +117,10 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          const Positioned.fill(child: WaveDecor()),
+          SafeArea(
         child: ListenableBuilder(
           listenable: _controller,
           builder: (context, _) {
@@ -125,7 +129,7 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 96, 20, 16),
+                    padding: const EdgeInsets.fromLTRB(20, 148, 20, 16),
                     child: Column(
                       children: [
                         _PatternPanel(segments: _controller.segments),
@@ -179,11 +183,13 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
                   onPressed:
                       widget.onHome ?? () => Navigator.of(context).maybePop(),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 55),
               ],
             );
           },
         ),
+          ),
+        ],
       ),
     );
   }
@@ -202,7 +208,7 @@ class _PatternPanel extends StatelessWidget {
       height: 312,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: AppColors.primary),
         borderRadius: BorderRadius.circular(8),
       ),
       child: SingleChildScrollView(
@@ -233,7 +239,8 @@ class SegmentMark extends StatelessWidget {
       width: long ? 46 : 12,
       height: 12,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        color: AppColors.primary,
+        border: Border.all(color: AppColors.primary),
         borderRadius: BorderRadius.circular(200),
       ),
     );
@@ -264,7 +271,7 @@ class _SegmentButton extends StatelessWidget {
           height: 50,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.black),
+            border: Border.all(color: AppColors.primary),
             borderRadius: BorderRadius.circular(10),
           ),
           child: SegmentMark(segment: segment),
@@ -298,6 +305,9 @@ class _ActionButton extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
+            color: onTap == null
+                ? AppColors.hover.withValues(alpha: 0.4)
+                : AppColors.hover,
             border: Border.all(
               color: onTap == null ? AppColors.disabled : Colors.black,
             ),

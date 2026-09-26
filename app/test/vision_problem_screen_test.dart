@@ -11,13 +11,16 @@ void main() {
     );
 
     expect(find.text('Protanopie'), findsOneWidget);
-    await tester.tap(find.text('Suivants'));
+    // Le contenu défile sur l'écran de test (600 px de haut).
+    await tester.ensureVisible(find.byIcon(Icons.skip_next_outlined));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     await tester.pump();
     expect(result, isNull);
 
     await tester.tap(find.text('Tritanopie'));
     await tester.pump();
-    await tester.tap(find.text('Suivants'));
+    await tester.ensureVisible(find.byIcon(Icons.skip_next_outlined));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     expect(result, ColorVisionType.tritanopie);
   });
 }

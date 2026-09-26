@@ -4,6 +4,7 @@ import '../config/associations.dart';
 import '../models/association.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/wave_decor.dart';
 
 class AssociationsScreen extends StatelessWidget {
   final List<Association> associations;
@@ -22,33 +23,51 @@ class AssociationsScreen extends StatelessWidget {
     this.onHome,
   });
 
+  static const _defaultBanner = 'assets/images/association_banner_placeholder.png';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 96, 20, 16),
-                itemCount: associations.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 20),
-                itemBuilder: (context, index) {
-                  final association = associations[index];
-                  return _AssociationCard(
-                    association: association,
-                    onContact: () => onContact?.call(association),
-                  );
-                },
-              ),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: WaveDecor()),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 17, 20, 16),
+                    children: [
+                      const Text(
+                        'Trouvez\nquelles entités pour\nvous aider.',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 27,
+                          fontWeight: FontWeight.w700,
+                          height: 1.33,
+                          color: AppColors.title,
+                        ),
+                      ),
+                      const SizedBox(height: 23),
+                      for (var i = 0; i < associations.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 21),
+                        _AssociationCard(
+                          association: associations[i],
+                          onContact: () => onContact?.call(associations[i]),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                HomeButton(
+                  onPressed: onHome ?? () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(height: 55),
+              ],
             ),
-            HomeButton(
-              onPressed: onHome ?? () => Navigator.of(context).maybePop(),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -60,8 +79,6 @@ class _AssociationCard extends StatelessWidget {
 
   const _AssociationCard({required this.association, required this.onContact});
 
-  static const _placeholderGrey = Color(0xFFC4C4C4);
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -71,7 +88,11 @@ class _AssociationCard extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                _framed(height: 110, asset: association.bannerAsset),
+                _framed(
+                  height: 110,
+                  asset:
+                      association.bannerAsset ?? AssociationsScreen._defaultBanner,
+                ),
                 SizedBox(
                   height: 25,
                   child: Stack(
@@ -80,11 +101,7 @@ class _AssociationCard extends StatelessWidget {
                       Positioned(
                         left: 10,
                         top: -25,
-                        child: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: _framed(asset: association.logoAsset),
-                        ),
+                        child: _Logo(asset: association.logoAsset),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 70),
@@ -117,14 +134,18 @@ class _AssociationCard extends StatelessWidget {
               child: Container(
                 width: 50,
                 height: 50,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFBCBCBC),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary),
+                  boxShadow: const [
+                    BoxShadow(color: AppColors.hover, offset: Offset(2, 2)),
+                  ],
                 ),
                 child: const Icon(
                   Icons.sms_outlined,
                   size: 30,
-                  color: Colors.black,
+                  color: AppColors.hover,
                 ),
               ),
             ),
@@ -134,18 +155,43 @@ class _AssociationCard extends StatelessWidget {
     );
   }
 
-  Widget _framed({double? height, String? asset}) {
+  Widget _framed({required double height, required String asset}) {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: asset == null ? _placeholderGrey : null,
         border: Border.all(color: AppColors.primary),
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
+      child: SizedBox.expand(child: Image.asset(asset, fit: BoxFit.cover)),
+    );
+  }
+}
+
+/// Pastille ronde du logo ; sans logo, pictogramme par défaut de la maquette.
+class _Logo extends StatelessWidget {
+  final String? asset;
+
+  const _Logo({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: AppColors.logoBackground,
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.primary),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: asset == null
-          ? null
-          : SizedBox.expand(child: Image.asset(asset, fit: BoxFit.cover)),
+          ? const Icon(
+              Icons.local_fire_department_outlined,
+              size: 24,
+              color: Colors.black,
+            )
+          : Image.asset(asset!, fit: BoxFit.cover),
     );
   }
 }

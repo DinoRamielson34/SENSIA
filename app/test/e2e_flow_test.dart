@@ -51,6 +51,7 @@ void main() {
     }
 
     Future<void> openMenu() async {
+      await tester.ensureVisible(find.byIcon(Icons.home_outlined));
       await tester.tap(find.byIcon(Icons.home_outlined));
       await tester.pumpAndSettle();
     }
@@ -58,16 +59,16 @@ void main() {
     // Onboarding.
     await tester.tap(find.text('Client'));
     await tester.pump();
-    await tester.tap(find.text('Suivants'));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     await settle();
     await tester.tap(find.text('Protanopie'));
     await tester.pump();
-    await tester.tap(find.text('Suivants'));
+    await tester.tap(find.byIcon(Icons.skip_next_outlined));
     await settle();
 
     // Help → réglages : couper le train agit sur le pipeline.
     await openMenu();
-    await tester.tap(find.text('Help'));
+    await tester.tap(find.bySemanticsLabel('Help'));
     await settle();
     expect(pipeline.isCategoryEnabled('train'), isTrue);
     await tester.tap(find.text('Train'));
@@ -87,7 +88,7 @@ void main() {
 
     // Settings → vibrations → configuration du train.
     await openMenu();
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.bySemanticsLabel('Settings'));
     await settle();
     await tester.tap(find.byIcon(Icons.settings_outlined).first);
     await settle();
@@ -110,7 +111,7 @@ void main() {
 
     // Sauvegarde puis restauration.
     await openMenu();
-    await tester.tap(find.text('Sauvegarde'));
+    await tester.tap(find.bySemanticsLabel('Sauvegarde'));
     await settle();
     await tester.tap(find.text('Sauvegarder mes donnees'));
     await tester.pumpAndSettle();

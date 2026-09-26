@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/user_role.dart';
 import '../theme/app_theme.dart';
 import '../widgets/next_button.dart';
+import '../widgets/wave_decor.dart';
 
 class RoleSelectionController extends ChangeNotifier {
   UserRole? _selected;
@@ -52,64 +53,88 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         final selected = _controller.selected;
         return Scaffold(
           backgroundColor: AppColors.background,
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 96),
-                  const Text(
-                    'Êtes-vous...',
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.text,
+          body: Stack(
+            children: [
+              const Positioned.fill(child: WaveDecor()),
+              SafeArea(
+                // Défilement de secours : le contenu (≈685 px) dépasse les petits écrans.
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(child: _buildContent(selected)),
                     ),
                   ),
-                  const Spacer(),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _RoleCard(
-                          role: UserRole.accompagnateur,
-                          image: 'assets/images/role_accompagnateur.png',
-                          selected: selected == UserRole.accompagnateur,
-                          onTap: () =>
-                              _controller.select(UserRole.accompagnateur),
-                        ),
-                      ),
-                      const SizedBox(width: 17),
-                      Expanded(
-                        child: _RoleCard(
-                          role: UserRole.client,
-                          image: 'assets/images/role_client.png',
-                          selected: selected == UserRole.client,
-                          onTap: () => _controller.select(UserRole.client),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  NextButton(
-                    onPressed: selected == null
-                        ? null
-                        : () => widget.onContinue?.call(selected),
-                  ),
-                  const SizedBox(height: 96),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
     );
   }
+
+  Widget _buildContent(UserRole? selected) {
+    return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 100),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          'Êtes-vous...',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 27,
+                            fontWeight: FontWeight.w700,
+                            height: 1.33,
+                            color: AppColors.title,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _RoleCard(
+                              role: UserRole.accompagnateur,
+                              image: 'assets/images/role_accompagnateur.png',
+                              selected: selected == UserRole.accompagnateur,
+                              onTap: () =>
+                                  _controller.select(UserRole.accompagnateur),
+                            ),
+                          ),
+                          const SizedBox(width: 17),
+                          Expanded(
+                            child: _RoleCard(
+                              role: UserRole.client,
+                              image: 'assets/images/role_client.png',
+                              selected: selected == UserRole.client,
+                              onTap: () => _controller.select(UserRole.client),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      NextButton(
+                        showLabel: false,
+                        onPressed: selected == null
+                            ? null
+                            : () => widget.onContinue?.call(selected),
+                      ),
+                      const SizedBox(height: 96),
+                    ],
+                  ),
+    );
+  }
 }
 
-class _RoleCard extends StatelessWidget {
+class _RoleCard extends StatefulWidget {
   final UserRole role;
   final String image;
   final bool selected;
@@ -123,59 +148,86 @@ class _RoleCard extends StatelessWidget {
   });
 
   @override
+  State<_RoleCard> createState() => _RoleCardState();
+}
+
+class _RoleCardState extends State<_RoleCard> {
+  // Survol souris ou appui long : fond orange du bouton (état « hover » de la maquette).
+  bool _hover = false;
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final role = widget.role;
+    final image = widget.image;
+    final selected = widget.selected;
+    final onTap = widget.onTap;
+    final highlighted = _hover || _pressed;
     return Semantics(
       button: true,
       selected: selected,
       label: role.label,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          children: [
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD9D9D9),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppColors.primary,
-                  width: selected ? 3 : 1,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        child: GestureDetector(
+          onTap: onTap,
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) => setState(() => _pressed = false),
+          onTapCancel: () => setState(() => _pressed = false),
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            children: [
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.primary,
+                    width: selected ? 3 : 1,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: SizedBox.expand(
+                  child: Image.asset(image, fit: BoxFit.cover),
                 ),
               ),
-              clipBehavior: Clip.antiAlias,
-              child: SizedBox.expand(
-                child: Image.asset(image, fit: BoxFit.cover),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                role.label,
-                style: const TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text,
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  role.label,
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 60,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: selected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary),
+              const SizedBox(height: 10),
+              Container(
+                height: 60,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: highlighted
+                      ? AppColors.hover
+                      : selected
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary),
+                ),
+                child: Icon(
+                  Icons.fingerprint,
+                  size: 30,
+                  color: selected && !highlighted
+                      ? AppColors.onPrimary
+                      : AppColors.primary,
+                ),
               ),
-              child: Icon(
-                Icons.fingerprint,
-                size: 30,
-                color: selected ? AppColors.onPrimary : AppColors.primary,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

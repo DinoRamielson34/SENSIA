@@ -95,6 +95,7 @@ class _HomeMenuState extends State<HomeMenu>
           // repliée derrière le bouton central sinon.
           Widget pill(
             String label,
+            IconData icon,
             VoidCallback? onTap, {
             required bool left,
             required bool top,
@@ -115,7 +116,11 @@ class _HomeMenuState extends State<HomeMenu>
                 opacity: _open ? 1 : 0,
                 child: IgnorePointer(
                   ignoring: !_open,
-                  child: _Pill(label: label, onTap: () => _select(onTap)),
+                  child: _Pill(
+                    label: label,
+                    icon: icon,
+                    onTap: () => _select(onTap),
+                  ),
                 ),
               ),
             );
@@ -123,10 +128,10 @@ class _HomeMenuState extends State<HomeMenu>
 
           return Stack(
             children: [
-              pill('Association', widget.onAssociation, left: true, top: true),
-              pill('Help', widget.onHelp, left: false, top: true),
-              pill('Settings', widget.onSettings, left: true, top: false),
-              pill('Sauvegarde', widget.onBackup, left: false, top: false),
+              pill('Association', Icons.groups_outlined, widget.onAssociation, left: true, top: true),
+              pill('Help', Icons.checklist, widget.onHelp, left: false, top: true),
+              pill('Settings', Icons.settings_voice_outlined, widget.onSettings, left: true, top: false),
+              pill('Sauvegarde', Icons.person_outline, widget.onBackup, left: false, top: false),
               Positioned(
                 left: centerLeft,
                 top: centerTop,
@@ -178,9 +183,10 @@ class _HomeMenuState extends State<HomeMenu>
 
 class _Pill extends StatelessWidget {
   final String label;
+  final IconData icon;
   final VoidCallback onTap;
 
-  const _Pill({required this.label, required this.onTap});
+  const _Pill({required this.label, required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -191,34 +197,11 @@ class _Pill extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: AppColors.primary,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 16,
-                    color: AppColors.onPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Icon(
-                Icons.fingerprint,
-                size: 30,
-                color: AppColors.onPrimary,
-              ),
-            ],
-          ),
+          child: Icon(icon, size: 24, color: AppColors.onPrimary),
         ),
       ),
     );

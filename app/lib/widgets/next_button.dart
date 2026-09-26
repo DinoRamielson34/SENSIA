@@ -6,7 +6,10 @@ import '../theme/app_theme.dart';
 class NextButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
-  const NextButton({super.key, required this.onPressed});
+  /// Affiche « Suivants » à côté de l'icône ; masqué sur la maquette du choix de rôle.
+  final bool showLabel;
+
+  const NextButton({super.key, required this.onPressed, this.showLabel = true});
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +25,21 @@ class NextButton extends StatelessWidget {
           disabledForegroundColor: AppColors.onPrimary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Suivants',
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            if (showLabel) ...[
+              const Text(
+                'Suivants',
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            SizedBox(width: 10),
-            Icon(Icons.skip_next_outlined, size: 24),
+              const SizedBox(width: 10),
+            ],
+            const Icon(Icons.skip_next_outlined, size: 24),
           ],
         ),
       ),

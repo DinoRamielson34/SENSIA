@@ -70,11 +70,12 @@ void main() {
     );
 
     expect(find.byIcon(Icons.close), findsNothing);
+    await tester.ensureVisible(find.byIcon(Icons.home_outlined));
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.close), findsOneWidget);
 
-    await tester.tap(find.text('Association'));
+    await tester.tap(find.bySemanticsLabel('Association'));
     // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
     await tester.pump(const Duration(milliseconds: 400));
     expect(associations, 1);
@@ -89,9 +90,10 @@ void main() {
       ),
     );
 
+    await tester.ensureVisible(find.byIcon(Icons.home_outlined));
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Help'));
+    await tester.tap(find.bySemanticsLabel('Help'));
     // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
     await tester.pump(const Duration(milliseconds: 400));
     expect(helps, 1);
@@ -108,9 +110,10 @@ void main() {
       ),
     );
 
+    await tester.ensureVisible(find.byIcon(Icons.home_outlined));
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sauvegarde'));
+    await tester.tap(find.bySemanticsLabel('Sauvegarde'));
     // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
     await tester.pump(const Duration(milliseconds: 400));
     expect(backups, 1);
@@ -124,6 +127,7 @@ void main() {
     );
     expect(tester.hasRunningAnimations, isTrue);
 
+    await tester.ensureVisible(find.byIcon(Icons.home_outlined));
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     expect(tester.hasRunningAnimations, isFalse);

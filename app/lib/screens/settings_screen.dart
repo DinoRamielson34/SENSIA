@@ -4,6 +4,7 @@ import '../config/settings_categories.dart';
 import '../models/settings_category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/wave_decor.dart';
 
 class SettingsController extends ChangeNotifier {
   final Map<String, bool> _values;
@@ -82,38 +83,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListenableBuilder(
-                listenable: _controller,
-                builder: (context, _) => ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 96, 20, 16),
-                  children: [
-                    for (final category in _categories) ...[
-                      _CategoryHeader(title: category.title),
-                      for (final option in category.options) ...[
-                        const SizedBox(height: 4),
-                        _OptionRow(
-                          label: option.label,
-                          value: _controller.valueOf(option.id),
-                          onTap: () => _toggle(option.id),
+      body: Stack(
+        children: [
+          const Positioned.fill(child: WaveDecor()),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: _controller,
+                    builder: (context, _) => ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 89, 20, 16),
+                      children: [
+                        const Text(
+                          'Parametres des sons',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 27,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.title,
+                          ),
                         ),
+                        const SizedBox(height: 21),
+                        for (final category in _categories) ...[
+                          _CategoryHeader(title: category.title),
+                          for (final option in category.options) ...[
+                            const SizedBox(height: 4),
+                            _OptionRow(
+                              label: option.label,
+                              value: _controller.valueOf(option.id),
+                              onTap: () => _toggle(option.id),
+                            ),
+                          ],
+                          const SizedBox(height: 20),
+                        ],
                       ],
-                      const SizedBox(height: 20),
-                    ],
-                  ],
+                    ),
+                  ),
                 ),
-              ),
+                HomeButton(
+                  onPressed:
+                      widget.onHome ?? () => Navigator.of(context).maybePop(),
+                ),
+                const SizedBox(height: 55),
+              ],
             ),
-            HomeButton(
-              onPressed:
-                  widget.onHome ?? () => Navigator.of(context).maybePop(),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -130,12 +146,17 @@ class _CategoryHeader extends StatelessWidget {
       height: 22,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.primary,
+        border: Border.all(color: AppColors.primary),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 10, color: Colors.black),
+        style: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 10,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -164,28 +185,32 @@ class _OptionRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Container(
           height: 34,
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.settingRow,
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(width: 6),
-              // Actif = pastille de la couleur principale (état non fourni par la maquette).
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  color: Colors.black,
+                ),
+              ),
+              // Actif = pastille pleine (état non fourni par la maquette).
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 30,
-                height: 30,
+                width: 15,
+                height: 15,
                 decoration: BoxDecoration(
                   color: value ? AppColors.primary : Colors.white,
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary),
                 ),
-              ),
-              const SizedBox(width: 39),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 10, color: Colors.black),
               ),
             ],
           ),

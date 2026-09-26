@@ -39,11 +39,9 @@ class FakeAudioService extends AudioPreprocessingService {
   Future<void> dispose() async {}
 
   /// Simule l'arrivée d'une seconde d'audio (silence).
-  void pushFrame() => onFrame?.call(AudioFrame(
-        samples: Float32List(16000),
-        sampleRate: 16000,
-        numChannels: 1,
-      ));
+  void pushFrame() => onFrame?.call(
+    AudioFrame(samples: Float32List(16000), sampleRate: 16000, numChannels: 1),
+  );
 }
 
 /// IA factice : renvoie les scores YAMNet que le test lui a donnés.
@@ -104,27 +102,31 @@ void main() {
     await Future<void>.delayed(Duration.zero);
   }
 
-  test('TEST 1+2 — un premier son reconnu (aboiement) fait vibrer son motif',
-      () async {
-    await hear('Bark', 0.91);
+  test(
+    'TEST 1+2 — un premier son reconnu (aboiement) fait vibrer son motif',
+    () async {
+      await hear('Bark', 0.91);
 
-    expect(pipeline.lastResult!.event.category, 'dog_bark');
-    expect(pipeline.lastResult!.event.source, 'microphone');
-    expect(pipeline.lastResult!.isSimulation, isFalse);
-    expect(pipeline.lastResult!.status, SoundEventStatus.triggered);
-    // dog_bark = 3 vibrations longues : [0, v, p, v, p, v, 0].
-    expect(executor.vibrateCalls.single, [0, 500, 150, 500, 150, 500, 0]);
-  });
+      expect(pipeline.lastResult!.event.category, 'dog_bark');
+      expect(pipeline.lastResult!.event.source, 'microphone');
+      expect(pipeline.lastResult!.isSimulation, isFalse);
+      expect(pipeline.lastResult!.status, SoundEventStatus.triggered);
+      // dog_bark = 3 vibrations longues : [0, v, p, v, p, v, 0].
+      expect(executor.vibrateCalls.single, [0, 500, 150, 500, 150, 500, 0]);
+    },
+  );
 
-  test('TEST 3+4 — un deuxième son (sonnette) fait vibrer un motif différent',
-      () async {
-    await hear('Bark', 0.91);
-    await hear('Doorbell', 0.9);
+  test(
+    'TEST 3+4 — un deuxième son (sonnette) fait vibrer un motif différent',
+    () async {
+      await hear('Bark', 0.91);
+      await hear('Doorbell', 0.9);
 
-    expect(executor.vibrateCalls.length, 2);
-    expect(executor.vibrateCalls[1], [0, 150, 150, 150, 0]); // 2 courtes
-    expect(executor.vibrateCalls[1], isNot(executor.vibrateCalls[0]));
-  });
+      expect(executor.vibrateCalls.length, 2);
+      expect(executor.vibrateCalls[1], [0, 150, 150, 150, 0]); // 2 courtes
+      expect(executor.vibrateCalls[1], isNot(executor.vibrateCalls[0]));
+    },
+  );
 
   test('TEST 5 — un score sous le seuil ne fait pas vibrer', () async {
     // Le filtre IA (EMA) retient déjà ce qui est trop faible : rien n'arrive
@@ -149,8 +151,7 @@ void main() {
     expect(executor.vibrateCalls, isEmpty);
   });
 
-  test('TEST 7 — après l\'arrêt de l\'écoute, plus aucune détection',
-      () async {
+  test('TEST 7 — après l\'arrêt de l\'écoute, plus aucune détection', () async {
     await pipeline.stop();
     expect(pipeline.isListening, isFalse);
 
@@ -162,25 +163,31 @@ void main() {
     expect(pipeline.lastResult, isNull);
   });
 
-  test('TEST 8 — un son prolongé ne provoque pas de vibrations en rafale',
-      () async {
-    for (var i = 0; i < 5; i++) {
-      await hear('Bark', 0.95);
-    }
+  test(
+    'TEST 8 — un son prolongé ne provoque pas de vibrations en rafale',
+    () async {
+      for (var i = 0; i < 5; i++) {
+        await hear('Bark', 0.95);
+      }
 
-    expect(executor.vibrateCalls.length, 1);
-    expect(pipeline.lastResult!.status, SoundEventStatus.inCooldown);
-  });
+      expect(executor.vibrateCalls.length, 1);
+      expect(pipeline.lastResult!.status, SoundEventStatus.inCooldown);
+    },
+  );
 
-  test('la détection la plus prioritaire fait vibrer, pas la plus faible',
-      () async {
-    // Alarme incendie (P5) et aboiement (P1) dans la même seconde.
-    await pipeline.handleDetections(
-        [_det('fire_alarm', 0.9, 5), _det('dog_bark', 0.9, 1)]);
+  test(
+    'la détection la plus prioritaire fait vibrer, pas la plus faible',
+    () async {
+      // Alarme incendie (P5) et aboiement (P1) dans la même seconde.
+      await pipeline.handleDetections([
+        _det('fire_alarm', 0.9, 5),
+        _det('dog_bark', 0.9, 1),
+      ]);
 
-    expect(executor.vibrateCalls.length, 1);
-    expect(pipeline.lastTriggered!.event.category, 'fire_alarm');
-  });
+      expect(executor.vibrateCalls.length, 1);
+      expect(pipeline.lastTriggered!.event.category, 'fire_alarm');
+    },
+  );
 
   test('un son simulé est marqué comme simulé', () async {
     final result = await pipeline.simulate('doorbell', 0.95);

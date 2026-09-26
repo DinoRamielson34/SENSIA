@@ -14,17 +14,19 @@ void main() {
     engine = HapticEngine(executor: executor);
   });
 
-  test('playPattern déclenche la vibration avec les bons timings natifs',
-      () async {
-    const pattern = VibrationPattern(
-      id: 'simple',
-      pulses: [VibrationPulse(vibrate: Duration(milliseconds: 200))],
-    );
+  test(
+    'playPattern déclenche la vibration avec les bons timings natifs',
+    () async {
+      const pattern = VibrationPattern(
+        id: 'simple',
+        pulses: [VibrationPulse(vibrate: Duration(milliseconds: 200))],
+      );
 
-    await engine.playPattern(pattern);
+      await engine.playPattern(pattern);
 
-    expect(executor.vibrateCalls.single, [0, 200, 0]);
-  });
+      expect(executor.vibrateCalls.single, [0, 200, 0]);
+    },
+  );
 
   test('playPattern convertit correctement un motif avec une pause nulle '
       'au milieu de la séquence', () async {
@@ -91,18 +93,20 @@ void main() {
     expect(executor.callLog, ['cancel']);
   });
 
-  test('registerPattern puis playForCategory joue le motif enregistré',
-      () async {
-    const pattern = VibrationPattern(
-      id: 'alarme',
-      pulses: [VibrationPulse(vibrate: Duration(milliseconds: 300))],
-    );
-    engine.registerPattern('alarme', pattern);
+  test(
+    'registerPattern puis playForCategory joue le motif enregistré',
+    () async {
+      const pattern = VibrationPattern(
+        id: 'alarme',
+        pulses: [VibrationPulse(vibrate: Duration(milliseconds: 300))],
+      );
+      engine.registerPattern('alarme', pattern);
 
-    await engine.playForCategory('alarme');
+      await engine.playForCategory('alarme');
 
-    expect(executor.vibrateCalls.single, [0, 300, 0]);
-  });
+      expect(executor.vibrateCalls.single, [0, 300, 0]);
+    },
+  );
 
   test('playForCategory lève InvalidVibrationPatternException pour une '
       'catégorie inconnue', () async {
@@ -113,33 +117,34 @@ void main() {
     expect(executor.callLog, isEmpty);
   });
 
-  test('un appel plus récent annule le précédent avant qu\'il ne vibre',
-      () async {
-    executor.cancelDelay = const Duration(milliseconds: 50);
-    const patternA = VibrationPattern(
-      id: 'A',
-      pulses: [VibrationPulse(vibrate: Duration(milliseconds: 100))],
-    );
-    const patternB = VibrationPattern(
-      id: 'B',
-      pulses: [VibrationPulse(vibrate: Duration(milliseconds: 200))],
-    );
+  test(
+    'un appel plus récent annule le précédent avant qu\'il ne vibre',
+    () async {
+      executor.cancelDelay = const Duration(milliseconds: 50);
+      const patternA = VibrationPattern(
+        id: 'A',
+        pulses: [VibrationPulse(vibrate: Duration(milliseconds: 100))],
+      );
+      const patternB = VibrationPattern(
+        id: 'B',
+        pulses: [VibrationPulse(vibrate: Duration(milliseconds: 200))],
+      );
 
-    final first = engine.playPattern(patternA);
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-    executor.cancelDelay = Duration.zero;
-    final second = engine.playPattern(patternB);
+      final first = engine.playPattern(patternA);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      executor.cancelDelay = Duration.zero;
+      final second = engine.playPattern(patternB);
 
-    await Future.wait([first, second]);
+      await Future.wait([first, second]);
 
-    expect(executor.vibrateCalls, [
-      [0, 200, 0],
-    ]);
-  });
+      expect(executor.vibrateCalls, [
+        [0, 200, 0],
+      ]);
+    },
+  );
 
   test('un appel plus récent invalide le précédent même pendant sa propre '
-      'vérification hasVibrator, avant tout appel à cancel/vibrate',
-      () async {
+      'vérification hasVibrator, avant tout appel à cancel/vibrate', () async {
     executor.hasVibratorDelay = const Duration(milliseconds: 50);
     const patternA = VibrationPattern(
       id: 'A',

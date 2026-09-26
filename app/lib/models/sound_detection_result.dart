@@ -16,11 +16,11 @@ class SoundDetectionResult {
   });
 
   Map<String, dynamic> toJson() => {
-        'category': category,
-        'yamnetClass': yamnetClass,
-        'score': double.parse(score.toStringAsFixed(2)),
-        'confirmed': confirmed,
-        'vibrationPriority': vibrationPriority,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'category': category,
+    'yamnetClass': yamnetClass,
+    'score': double.parse(score.toStringAsFixed(2)),
+    'confirmed': confirmed,
+    'vibrationPriority': vibrationPriority,
+    'timestamp': timestamp.toIso8601String(),
+  };
 }

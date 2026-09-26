@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/user_role.dart';
 import '../theme/app_theme.dart';
+import '../widgets/next_button.dart';
 
 class RoleSelectionController extends ChangeNotifier {
   UserRole? _selected;
@@ -92,7 +93,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                     ],
                   ),
                   const Spacer(),
-                  _NextButton(
+                  NextButton(
                     onPressed: selected == null
                         ? null
                         : () => widget.onContinue?.call(selected),
@@ -174,45 +175,6 @@ class _RoleCard extends StatelessWidget {
                 color: selected ? AppColors.onPrimary : AppColors.primary,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NextButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-
-  const _NextButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 60,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.onPrimary,
-          disabledBackgroundColor: AppColors.disabled,
-          disabledForegroundColor: AppColors.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Suivants',
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(width: 10),
-            Icon(Icons.skip_next_outlined, size: 24),
           ],
         ),
       ),

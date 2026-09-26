@@ -29,8 +29,9 @@ void main() {
     expect(executor.callLog, contains('cancel'));
   });
 
-  testWidgets('un appareil sans vibreur affiche un message clair',
-      (tester) async {
+  testWidgets('un appareil sans vibreur affiche un message clair', (
+    tester,
+  ) async {
     final executor = FakeVibrationExecutor()..hasVibratorResult = false;
     final engine = HapticEngine(executor: executor);
 

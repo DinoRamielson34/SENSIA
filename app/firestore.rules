@@ -11,5 +11,10 @@ service cloud.firestore {
     match /users/{userId}/settings/vibrations {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    // Sauvegarde du profil (rôle, réglages, motifs de vibration) : un seul
+    // document par utilisateur, écran « Sauvegarde ».
+    match /users/{userId}/profile/main {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }

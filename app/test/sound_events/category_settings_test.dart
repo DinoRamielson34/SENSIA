@@ -2,13 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/sound_events/category_settings.dart';
 
 void main() {
-  test('contient les catégories par défaut sonnette et aboiement, activées',
-      () {
-    final settings = SoundEventSettings();
-    expect(settings.lookup('sonnette'), isNotNull);
-    expect(settings.lookup('aboiement'), isNotNull);
-    expect(settings.lookup('sonnette')!.enabled, isTrue);
-  });
+  test(
+    'contient les catégories par défaut sonnette et aboiement, activées',
+    () {
+      final settings = SoundEventSettings();
+      expect(settings.lookup('sonnette'), isNotNull);
+      expect(settings.lookup('aboiement'), isNotNull);
+      expect(settings.lookup('sonnette')!.enabled, isTrue);
+    },
+  );
 
   test('lookup retourne null pour une catégorie inconnue', () {
     final settings = SoundEventSettings();

@@ -57,11 +57,7 @@ void main() {
     return isA<HapticPlatformException>().having(
       (e) => e.cause,
       'cause',
-      isA<PlatformException>().having(
-        (p) => p.message,
-        'message',
-        message,
-      ),
+      isA<PlatformException>().having((p) => p.message, 'message', message),
     );
   }
 
@@ -101,30 +97,36 @@ void main() {
     );
   });
 
-  test('hasVibrator enveloppe MissingPluginException (aucun pont natif '
-      'enregistré, ex. un second FlutterEngine) dans HapticPlatformException',
-      () async {
-    // Pas de mockChannel() ici : aucun handler n'est enregistré sur le
-    // canal, ce qui reproduit un FlutterEngine sans le pont natif.
-    await expectLater(
-      () => executor.hasVibrator(),
-      throwsA(isA<HapticPlatformException>()),
-    );
-  });
+  test(
+    'hasVibrator enveloppe MissingPluginException (aucun pont natif '
+    'enregistré, ex. un second FlutterEngine) dans HapticPlatformException',
+    () async {
+      // Pas de mockChannel() ici : aucun handler n'est enregistré sur le
+      // canal, ce qui reproduit un FlutterEngine sans le pont natif.
+      await expectLater(
+        () => executor.hasVibrator(),
+        throwsA(isA<HapticPlatformException>()),
+      );
+    },
+  );
 
-  test('vibrate enveloppe MissingPluginException dans HapticPlatformException',
-      () async {
-    await expectLater(
-      () => executor.vibrate([0, 100, 0]),
-      throwsA(isA<HapticPlatformException>()),
-    );
-  });
+  test(
+    'vibrate enveloppe MissingPluginException dans HapticPlatformException',
+    () async {
+      await expectLater(
+        () => executor.vibrate([0, 100, 0]),
+        throwsA(isA<HapticPlatformException>()),
+      );
+    },
+  );
 
-  test('cancel enveloppe MissingPluginException dans HapticPlatformException',
-      () async {
-    await expectLater(
-      () => executor.cancel(),
-      throwsA(isA<HapticPlatformException>()),
-    );
-  });
+  test(
+    'cancel enveloppe MissingPluginException dans HapticPlatformException',
+    () async {
+      await expectLater(
+        () => executor.cancel(),
+        throwsA(isA<HapticPlatformException>()),
+      );
+    },
+  );
 }

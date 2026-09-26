@@ -106,22 +106,33 @@ class _PreprocessingTestScreenState extends State<PreprocessingTestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildRow('État microphone',
-                        _isActive ? 'ACTIF' : 'ARRÊTÉ', _isActive),
+                    _buildRow(
+                      'État microphone',
+                      _isActive ? 'ACTIF' : 'ARRÊTÉ',
+                      _isActive,
+                    ),
                     const Divider(),
                     _buildRow('Format', 'PCM 16-bit', _isActive),
                     const Divider(),
                     _buildRow('Canaux', '1 (Mono)', _isActive),
                     const Divider(),
-                    _buildRow('Sample rate',
-                        '${AudioPreprocessingService.targetSampleRate} Hz', _isActive),
+                    _buildRow(
+                      'Sample rate',
+                      '${AudioPreprocessingService.targetSampleRate} Hz',
+                      _isActive,
+                    ),
                     const Divider(),
-                    _buildRow('Samples reçus',
-                        '${_stats.totalSamplesReceived}', _isActive),
+                    _buildRow(
+                      'Samples reçus',
+                      '${_stats.totalSamplesReceived}',
+                      _isActive,
+                    ),
                     const Divider(),
-                    _buildRow('Buffer',
-                        '${_stats.bufferSampleCount} / ${AudioPreprocessingService.samplesPerFrame}',
-                        _isActive),
+                    _buildRow(
+                      'Buffer',
+                      '${_stats.bufferSampleCount} / ${AudioPreprocessingService.samplesPerFrame}',
+                      _isActive,
+                    ),
                     const Divider(),
                     _buildRow(
                       'Buffer status',
@@ -132,8 +143,11 @@ class _PreprocessingTestScreenState extends State<PreprocessingTestScreen> {
                           : Colors.orange,
                     ),
                     const Divider(),
-                    _buildRow('Frames produits',
-                        '${_stats.framesProduced}', _isActive),
+                    _buildRow(
+                      'Frames produits',
+                      '${_stats.framesProduced}',
+                      _isActive,
+                    ),
                   ],
                 ),
               ),
@@ -147,15 +161,13 @@ class _PreprocessingTestScreenState extends State<PreprocessingTestScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Dernier frame',
-                          style: theme.textTheme.titleMedium),
+                      Text('Dernier frame', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
+                      Text('Samples : ${_lastFrame!.sampleCount}'),
                       Text(
-                          'Samples : ${_lastFrame!.sampleCount}'),
-                      Text(
-                          'Durée : ${_lastFrame!.durationSeconds.toStringAsFixed(2)} s'),
-                      Text(
-                          'Sample rate : ${_lastFrame!.sampleRate} Hz'),
+                        'Durée : ${_lastFrame!.durationSeconds.toStringAsFixed(2)} s',
+                      ),
+                      Text('Sample rate : ${_lastFrame!.sampleRate} Hz'),
                     ],
                   ),
                 ),
@@ -167,8 +179,12 @@ class _PreprocessingTestScreenState extends State<PreprocessingTestScreen> {
     );
   }
 
-  Widget _buildRow(String label, String value, bool active,
-      {Color? valueColor}) {
+  Widget _buildRow(
+    String label,
+    String value,
+    bool active, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(

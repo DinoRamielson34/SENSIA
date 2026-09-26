@@ -2,11 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/models/vibration_pattern.dart';
 
 void main() {
-  test('VibrationPulse expose vibrate et pauseAfter (pauseAfter par défaut à zéro)', () {
-    const pulse = VibrationPulse(vibrate: Duration(milliseconds: 150));
-    expect(pulse.vibrate, const Duration(milliseconds: 150));
-    expect(pulse.pauseAfter, Duration.zero);
-  });
+  test(
+    'VibrationPulse expose vibrate et pauseAfter (pauseAfter par défaut à zéro)',
+    () {
+      const pulse = VibrationPulse(vibrate: Duration(milliseconds: 150));
+      expect(pulse.vibrate, const Duration(milliseconds: 150));
+      expect(pulse.pauseAfter, Duration.zero);
+    },
+  );
 
   test('VibrationPattern expose id et la liste des impulsions', () {
     const pattern = VibrationPattern(

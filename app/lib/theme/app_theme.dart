@@ -9,4 +9,8 @@ class AppColors {
   static const onPrimary = Color(0xFFF3F3F3);
   static const text = Color(0xFF0A0A0A);
   static const disabled = Color(0xFF8E869C);
+  static const surface = Color(0xFFD9D9D9);
+  static const statusBar = Color(0xFF252525);
+  static const statusIconOff = Color(0xFF8A8A8A);
+  static const statusIconOn = Color(0xFFFFFFFF);
 }

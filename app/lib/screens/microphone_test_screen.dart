@@ -68,11 +68,7 @@ class _MicrophoneTestScreenState extends State<MicrophoneTestScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.mic,
-                size: 72,
-                color: _isActive ? Colors.green : null,
-              ),
+              Icon(Icons.mic, size: 72, color: _isActive ? Colors.green : null),
               const SizedBox(height: 16),
               const Text(
                 'MICROPHONE TEST',

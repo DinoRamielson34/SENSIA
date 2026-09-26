@@ -35,14 +35,20 @@ void main() {
     });
 
     test('belowThreshold() : score strictement sous le seuil donné', () {
-      final event = SimulationScenarios.belowThreshold('sonnette', threshold: 0.75);
+      final event = SimulationScenarios.belowThreshold(
+        'sonnette',
+        threshold: 0.75,
+      );
       expect(event.score, lessThan(0.75));
       expect(event.category, 'sonnette');
     });
 
     test('repeatedIdentical() : N événements identiques (catégorie, '
         'score, horodatage)', () {
-      final events = SimulationScenarios.repeatedIdentical('aboiement', count: 4);
+      final events = SimulationScenarios.repeatedIdentical(
+        'aboiement',
+        count: 4,
+      );
       expect(events, hasLength(4));
       expect(events.map((e) => e.category).toSet(), {'aboiement'});
       expect(events.map((e) => e.score).toSet(), hasLength(1));
@@ -131,8 +137,7 @@ void main() {
     });
 
     test('sendSeries() envoie N événements dans l\'ordre, avec le délai '
-        'injecté (jamais Future.delayed réel) entre chaque envoi',
-        () async {
+        'injecté (jamais Future.delayed réel) entre chaque envoi', () async {
       final delaisRecus = <Duration>[];
       final simulatorAvecDelaiFactice = EventSimulator(
         processor: processor,
@@ -175,10 +180,10 @@ void main() {
         delay: const Duration(seconds: 6),
       );
 
-      expect(
-        results.map((r) => r.status),
-        [SoundEventStatus.triggered, SoundEventStatus.triggered],
-      );
+      expect(results.map((r) => r.status), [
+        SoundEventStatus.triggered,
+        SoundEventStatus.triggered,
+      ]);
     });
 
     test('sendSeries() marque bien chaque événement comme simulé', () async {
@@ -216,13 +221,15 @@ void main() {
         ),
       );
 
-      final result = await simulator.send(SoundEvent(
-        category: 'alarme-perso',
-        score: 0.9,
-        timestamp: DateTime.now(),
-        source: 'simulation',
-        isSimulation: true,
-      ));
+      final result = await simulator.send(
+        SoundEvent(
+          category: 'alarme-perso',
+          score: 0.9,
+          timestamp: DateTime.now(),
+          source: 'simulation',
+          isSimulation: true,
+        ),
+      );
 
       expect(result.status, SoundEventStatus.triggered);
       expect(executor.vibrateCalls.single, [0, 120, 80, 300, 0]);

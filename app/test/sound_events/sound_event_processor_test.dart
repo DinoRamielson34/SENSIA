@@ -42,44 +42,52 @@ void main() {
 
   test('TEST 1 — catégorie activée, score au-dessus du seuil, confirmation '
       'valide déclenche la vibration', () async {
-    final result =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final result = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
 
     expect(result.status, SoundEventStatus.triggered);
     expect(executor.vibrateCalls, isNotEmpty);
   });
 
-  test('TEST 2 — une catégorie désactivée ne déclenche aucune vibration',
-      () async {
-    processor.settings.updateCategory(
-      'sonnette',
-      const CategorySettings(
-        enabled: false,
-        threshold: 0.75,
-        requiredConfirmations: 1,
-        cooldown: Duration(seconds: 5),
-      ),
-    );
+  test(
+    'TEST 2 — une catégorie désactivée ne déclenche aucune vibration',
+    () async {
+      processor.settings.updateCategory(
+        'sonnette',
+        const CategorySettings(
+          enabled: false,
+          threshold: 0.75,
+          requiredConfirmations: 1,
+          cooldown: Duration(seconds: 5),
+        ),
+      );
 
-    final result =
-        await processor.process(event(category: 'sonnette', score: 0.99));
+      final result = await processor.process(
+        event(category: 'sonnette', score: 0.99),
+      );
 
-    expect(result.status, SoundEventStatus.categoryDisabled);
-    expect(executor.vibrateCalls, isEmpty);
-  });
+      expect(result.status, SoundEventStatus.categoryDisabled);
+      expect(executor.vibrateCalls, isEmpty);
+    },
+  );
 
-  test('TEST 3 — un score inférieur au seuil ne déclenche aucune vibration',
-      () async {
-    final result =
-        await processor.process(event(category: 'sonnette', score: 0.5));
+  test(
+    'TEST 3 — un score inférieur au seuil ne déclenche aucune vibration',
+    () async {
+      final result = await processor.process(
+        event(category: 'sonnette', score: 0.5),
+      );
 
-    expect(result.status, SoundEventStatus.belowThreshold);
-    expect(executor.vibrateCalls, isEmpty);
-  });
+      expect(result.status, SoundEventStatus.belowThreshold);
+      expect(executor.vibrateCalls, isEmpty);
+    },
+  );
 
   test('TEST 5 — une catégorie inconnue est ignorée proprement', () async {
-    final result =
-        await processor.process(event(category: 'inconnue', score: 0.99));
+    final result = await processor.process(
+      event(category: 'inconnue', score: 0.99),
+    );
 
     expect(result.status, SoundEventStatus.unknownCategory);
     expect(executor.vibrateCalls, isEmpty);
@@ -94,11 +102,7 @@ void main() {
     expect(resultDeclenche.isSimulation, isTrue);
 
     final resultSousSeuil = await processor.process(
-      event(
-        category: 'aboiement',
-        score: 0.1,
-        isSimulation: true,
-      ),
+      event(category: 'aboiement', score: 0.1, isSimulation: true),
     );
     expect(resultSousSeuil.status, SoundEventStatus.belowThreshold);
     expect(resultSousSeuil.isSimulation, isTrue);
@@ -108,8 +112,9 @@ void main() {
       'mais pas les événements simulés', () async {
     processor.stopListening();
 
-    final resultMicro =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final resultMicro = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
     expect(resultMicro.status, SoundEventStatus.listeningStopped);
     expect(executor.vibrateCalls, isEmpty);
 
@@ -133,8 +138,9 @@ void main() {
       ),
     );
 
-    final first =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final first = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
     expect(first.status, SoundEventStatus.awaitingConfirmation);
     expect(executor.vibrateCalls, isEmpty);
 
@@ -159,8 +165,9 @@ void main() {
 
     await processor.process(event(category: 'sonnette', score: 0.9));
     await processor.process(event(category: 'sonnette', score: 0.1));
-    final third =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final third = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
 
     // Le compteur ayant été remis à zéro, cette 3e détection n'est que la
     // 1re d'une nouvelle série : encore en attente, pas déclenché.
@@ -196,27 +203,29 @@ void main() {
     expect(executor.vibrateCalls, hasLength(2));
   });
 
-  test('un échec du moteur haptique (catégorie non enregistrée côté '
-      'HapticEngine) est retourné proprement, jamais levé comme exception',
-      () async {
-    processor.settings.updateCategory(
-      'connue-du-processor-seulement',
-      const CategorySettings(
-        enabled: true,
-        threshold: 0.5,
-        requiredConfirmations: 1,
-        cooldown: Duration(seconds: 5),
-      ),
-    );
+  test(
+    'un échec du moteur haptique (catégorie non enregistrée côté '
+    'HapticEngine) est retourné proprement, jamais levé comme exception',
+    () async {
+      processor.settings.updateCategory(
+        'connue-du-processor-seulement',
+        const CategorySettings(
+          enabled: true,
+          threshold: 0.5,
+          requiredConfirmations: 1,
+          cooldown: Duration(seconds: 5),
+        ),
+      );
 
-    final result = await processor.process(
-      event(category: 'connue-du-processor-seulement', score: 0.9),
-    );
+      final result = await processor.process(
+        event(category: 'connue-du-processor-seulement', score: 0.9),
+      );
 
-    expect(result.status, SoundEventStatus.hapticFailure);
-    expect(result.reason, isNotNull);
-    expect(executor.vibrateCalls, isEmpty);
-  });
+      expect(result.status, SoundEventStatus.hapticFailure);
+      expect(result.reason, isNotNull);
+      expect(executor.vibrateCalls, isEmpty);
+    },
+  );
 
   test('TEST 8 — deux catégories quasi simultanées ne provoquent pas de '
       'vibrations concurrentes incohérentes', () async {
@@ -268,11 +277,13 @@ void main() {
 
   test('une HapticPlatformException native est retournée proprement, '
       'jamais levée comme exception', () async {
-    executor.hasVibratorError =
-        const HapticPlatformException('panne native simulée');
+    executor.hasVibratorError = const HapticPlatformException(
+      'panne native simulée',
+    );
 
-    final result =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final result = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
 
     expect(result.status, SoundEventStatus.hapticFailure);
     expect(result.reason, isNotNull);
@@ -282,8 +293,9 @@ void main() {
       'proprement, jamais levé comme exception', () async {
     executor.hasVibratorResult = false;
 
-    final result =
-        await processor.process(event(category: 'sonnette', score: 0.9));
+    final result = await processor.process(
+      event(category: 'sonnette', score: 0.9),
+    );
 
     expect(result.status, SoundEventStatus.hapticFailure);
     expect(result.reason, isNotNull);
@@ -306,17 +318,12 @@ void main() {
     expect(justBefore.status, SoundEventStatus.inCooldown);
 
     final exactlyAt = await processor.process(
-      event(
-        category: 'sonnette',
-        score: 0.9,
-        timestamp: t0.add(cooldown),
-      ),
+      event(category: 'sonnette', score: 0.9, timestamp: t0.add(cooldown)),
     );
     expect(exactlyAt.status, SoundEventStatus.triggered);
   });
 
-  test('un historySink qui ne répond jamais ne bloque pas process()',
-      () async {
+  test('un historySink qui ne répond jamais ne bloque pas process()', () async {
     final sink = _RecordingHistorySink(neverCompletes: true);
     final withSink = SoundEventProcessor(
       hapticEngine: hapticEngine,
@@ -346,21 +353,23 @@ void main() {
     expect(result.status, SoundEventStatus.triggered);
   });
 
-  test('historySink n\'est jamais appelé pour un résultat non déclenché',
-      () async {
-    final sink = _RecordingHistorySink();
-    final withSink = SoundEventProcessor(
-      hapticEngine: hapticEngine,
-      historySink: sink,
-    );
+  test(
+    'historySink n\'est jamais appelé pour un résultat non déclenché',
+    () async {
+      final sink = _RecordingHistorySink();
+      final withSink = SoundEventProcessor(
+        hapticEngine: hapticEngine,
+        historySink: sink,
+      );
 
-    await withSink.process(event(category: 'sonnette', score: 0.1));
-    // Laisse une chance à un éventuel appel fire-and-forget de s'exécuter
-    // avant de vérifier qu'il n'a jamais eu lieu.
-    await Future<void>.delayed(Duration.zero);
+      await withSink.process(event(category: 'sonnette', score: 0.1));
+      // Laisse une chance à un éventuel appel fire-and-forget de s'exécuter
+      // avant de vérifier qu'il n'a jamais eu lieu.
+      await Future<void>.delayed(Duration.zero);
 
-    expect(sink.received, isEmpty);
-  });
+      expect(sink.received, isEmpty);
+    },
+  );
 
   test('un historySink qui lève une exception de façon synchrone '
       '(record() non-async) n\'échappe pas de process()', () async {

@@ -98,8 +98,9 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final maxPriority =
-        _detections.isEmpty ? 0 : _detections.first.vibrationPriority;
+    final maxPriority = _detections.isEmpty
+        ? 0
+        : _detections.first.vibrationPriority;
 
     return Scaffold(
       appBar: AppBar(title: const Text('SENSIA')),
@@ -127,17 +128,19 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                 padding: const EdgeInsets.all(14.0),
                 child: Column(
                   children: [
-                    _row('Modele',
-                        _modelLoading
-                            ? 'CHARGEMENT...'
-                            : _yamnetService.isLoaded
-                                ? 'OK'
-                                : 'ERREUR',
-                        _yamnetService.isLoaded
-                            ? Colors.green
-                            : _modelLoading
-                                ? Colors.orange
-                                : Colors.red),
+                    _row(
+                      'Modele',
+                      _modelLoading
+                          ? 'CHARGEMENT...'
+                          : _yamnetService.isLoaded
+                          ? 'OK'
+                          : 'ERREUR',
+                      _yamnetService.isLoaded
+                          ? Colors.green
+                          : _modelLoading
+                          ? Colors.orange
+                          : Colors.red,
+                    ),
                     if (_isActive) ...[
                       const Divider(),
                       _row('Inferences', '$_inferenceCount', null),
@@ -145,8 +148,11 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                       _row('Detectees', '${_detections.length}', null),
                       if (_detections.isNotEmpty) ...[
                         const Divider(),
-                        _row('Priorite max', '$maxPriority',
-                            _priorityColor(maxPriority)),
+                        _row(
+                          'Priorite max',
+                          '$maxPriority',
+                          _priorityColor(maxPriority),
+                        ),
                       ],
                     ],
                   ],
@@ -160,8 +166,9 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FilledButton.icon(
-                  onPressed:
-                      _isActive || !_yamnetService.isLoaded ? null : _start,
+                  onPressed: _isActive || !_yamnetService.isLoaded
+                      ? null
+                      : _start,
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('DEMARRER'),
                 ),
@@ -181,17 +188,21 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                 color: theme.colorScheme.errorContainer,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Text(_lastError!,
-                      style:
-                          TextStyle(color: theme.colorScheme.onErrorContainer)),
+                  child: Text(
+                    _lastError!,
+                    style: TextStyle(color: theme.colorScheme.onErrorContainer),
+                  ),
                 ),
               ),
 
             // Detections
             if (_detections.isNotEmpty) ...[
-              Text('Detections',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Detections',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 6),
               ..._detections.map((d) => _detectionCard(d, theme)),
             ],
@@ -199,20 +210,25 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
             // JSON output
             if (_detections.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('Sortie JSON',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                'Sortie JSON',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 6),
               Card(
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: SelectableText(
-                    const JsonEncoder.withIndent('  ')
-                        .convert(
-                            _detections.map((d) => d.toJson()).toList()),
+                    const JsonEncoder.withIndent(
+                      '  ',
+                    ).convert(_detections.map((d) => d.toJson()).toList()),
                     style: const TextStyle(
-                        fontFamily: 'monospace', fontSize: 11),
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ),
@@ -247,12 +263,18 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                   Text(
                     d.category,
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 2),
-                  Text('YAMNet : ${d.yamnetClass}',
-                      style: TextStyle(
-                          fontSize: 12, color: theme.colorScheme.outline)),
+                  Text(
+                    'YAMNet : ${d.yamnetClass}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -268,8 +290,9 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                       Text(
                         ema.toStringAsFixed(2),
                         style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontWeight: FontWeight.bold),
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -277,17 +300,22 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
                   Text(
                     'score brut : ${d.score.toStringAsFixed(2)}',
                     style: TextStyle(
-                        fontSize: 11, color: theme.colorScheme.outline),
+                      fontSize: 11,
+                      color: theme.colorScheme.outline,
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 10),
-            Text('P${d.vibrationPriority}',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: color)),
+            Text(
+              'P${d.vibrationPriority}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: color,
+              ),
+            ),
           ],
         ),
       ),
@@ -301,9 +329,10 @@ class _DetectionTestScreenState extends State<DetectionTestScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value,
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: color)),
+          Text(
+            value,
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
+          ),
         ],
       ),
     );

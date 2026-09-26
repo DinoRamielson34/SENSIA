@@ -48,9 +48,7 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
       return;
     }
 
-    final started = await _audioService.start(
-      onFrame: _onAudioFrame,
-    );
+    final started = await _audioService.start(onFrame: _onAudioFrame);
 
     if (started) {
       setState(() {
@@ -127,23 +125,33 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
                       _modelLoading
                           ? 'LOADING...'
                           : _yamnetService.isLoaded
-                              ? 'YES'
-                              : 'NO',
+                          ? 'YES'
+                          : 'NO',
                       _yamnetService.isLoaded
                           ? Colors.green
                           : _modelLoading
-                              ? Colors.orange
-                              : Colors.red,
+                          ? Colors.orange
+                          : Colors.red,
                     ),
                     if (_yamnetService.isLoaded) ...[
                       const Divider(),
-                      _statusRow('Labels', '${_yamnetService.labelCount}', null),
+                      _statusRow(
+                        'Labels',
+                        '${_yamnetService.labelCount}',
+                        null,
+                      ),
                       const Divider(),
-                      _statusRow('Input shape',
-                          '${_yamnetService.inputShape}', null),
+                      _statusRow(
+                        'Input shape',
+                        '${_yamnetService.inputShape}',
+                        null,
+                      ),
                       const Divider(),
-                      _statusRow('Output shape',
-                          '${_yamnetService.outputShape}', null),
+                      _statusRow(
+                        'Output shape',
+                        '${_yamnetService.outputShape}',
+                        null,
+                      ),
                     ],
                     if (_isActive) ...[
                       const Divider(),
@@ -160,8 +168,9 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FilledButton.icon(
-                  onPressed:
-                      _isActive || !_yamnetService.isLoaded ? null : _start,
+                  onPressed: _isActive || !_yamnetService.isLoaded
+                      ? null
+                      : _start,
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('DÉMARRER'),
                 ),
@@ -192,8 +201,9 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
             if (_topResults.isNotEmpty) ...[
               Text(
                 'Top results :',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Card(
@@ -210,7 +220,8 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
                               child: Text(
                                 r.label,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w500),
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -258,10 +269,7 @@ class _YamnetTestScreenState extends State<YamnetTestScreen> {
           Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
           Text(
             value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: valueColor,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: valueColor),
           ),
         ],
       ),

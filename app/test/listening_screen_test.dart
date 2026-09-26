@@ -75,7 +75,8 @@ void main() {
     expect(find.byIcon(Icons.close), findsOneWidget);
 
     await tester.tap(find.text('Association'));
-    await tester.pumpAndSettle();
+    // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
+    await tester.pump(const Duration(milliseconds: 400));
     expect(associations, 1);
     expect(find.byIcon(Icons.close), findsNothing);
   });
@@ -91,7 +92,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Help'));
-    await tester.pumpAndSettle();
+    // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
+    await tester.pump(const Duration(milliseconds: 400));
     expect(helps, 1);
   });
 
@@ -109,7 +111,41 @@ void main() {
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sauvegarde'));
-    await tester.pumpAndSettle();
+    // Menu refermé : le bouton pulse en boucle, pumpAndSettle ne finirait pas.
+    await tester.pump(const Duration(milliseconds: 400));
     expect(backups, 1);
+  });
+
+  testWidgets('le bouton home pulse tant que le menu est fermé', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(home: ListeningScreen(pipeline: _FakePipeline())),
+    );
+    expect(tester.hasRunningAnimations, isTrue);
+
+    await tester.tap(find.byIcon(Icons.home_outlined));
+    await tester.pumpAndSettle();
+    expect(tester.hasRunningAnimations, isFalse);
+
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.hasRunningAnimations, isTrue);
+  });
+
+  testWidgets('pas de pulsation si les animations sont réduites', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
+        home: ListeningScreen(pipeline: _FakePipeline()),
+      ),
+    );
+
+    expect(tester.hasRunningAnimations, isFalse);
   });
 }

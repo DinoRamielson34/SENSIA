@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -24,19 +26,59 @@ class HomeMenu extends StatefulWidget {
   State<HomeMenu> createState() => _HomeMenuState();
 }
 
-class _HomeMenuState extends State<HomeMenu> {
+class _HomeMenuState extends State<HomeMenu>
+    with SingleTickerProviderStateMixin {
   static const _duration = Duration(milliseconds: 250);
   static const _pillWidth = 116.0;
   static const _pillHeight = 60.0;
   static const _centerSize = 60.0;
 
+  // Une pulsation (début du cycle) puis un temps de repos.
+  static const _pulseCycle = Duration(milliseconds: 2400);
+  static const _pulseWindow = 0.4;
+
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: _pulseCycle,
+  );
+
   bool _open = false;
 
-  void _toggle() => setState(() => _open = !_open);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncPulse();
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  /// Le bouton pulse tant que le menu est fermé, pour inviter à appuyer ;
+  /// pas de pulsation si l'utilisateur a demandé de réduire les animations.
+  void _syncPulse() {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (_open || reduceMotion) {
+      _pulse
+        ..stop()
+        ..value = 0;
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat();
+    }
+  }
+
+  void _setOpen(bool open) {
+    setState(() => _open = open);
+    _syncPulse();
+  }
+
+  void _toggle() => _setOpen(!_open);
 
   void _select(VoidCallback? callback) {
     callback?.call();
-    setState(() => _open = false);
+    _setOpen(false);
   }
 
   @override
@@ -88,7 +130,43 @@ class _HomeMenuState extends State<HomeMenu> {
               Positioned(
                 left: centerLeft,
                 top: centerTop,
-                child: _CenterButton(open: _open, onTap: _toggle),
+                width: _centerSize,
+                height: _centerSize,
+                child: AnimatedBuilder(
+                  animation: _pulse,
+                  builder: (context, child) {
+                    // p va de 0 à 1 pendant la pulsation, puis reste à 1 (repos).
+                    final p = (_pulse.value / _pulseWindow).clamp(0.0, 1.0);
+                    final pulsing = _pulse.isAnimating && p < 1;
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        if (pulsing)
+                          IgnorePointer(
+                            child: Transform.scale(
+                              scale: 1 + 0.6 * p,
+                              child: Container(
+                                width: _centerSize,
+                                height: _centerSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.3 * (1 - p),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        Transform.scale(
+                          scale: pulsing ? 1 + 0.08 * math.sin(math.pi * p) : 1,
+                          child: child,
+                        ),
+                      ],
+                    );
+                  },
+                  child: _CenterButton(open: _open, onTap: _toggle),
+                ),
               ),
             ],
           );

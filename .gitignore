@@ -4,3 +4,7 @@ app/.gradle/
 app/build/
 app/android/.gradle/
 app/android/local.properties
+
+# macOS Finder metadata — app/.gitignore only covers app/, this covers the
+# rest of the repo (docs/, scripts/, template/, la racine).
+.DS_Store

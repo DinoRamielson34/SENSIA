@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Chemins explicites plutôt qu'un joker récursif {document=**} :
+    // un utilisateur authentifié ne peut lire/écrire QUE ses propres
+    // événements et ses propres préférences de vibration, pas n'importe
+    // quel document ou sous-collection arbitraire sous son propre uid.
+    match /users/{userId}/events/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/settings/vibrations {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

@@ -4,7 +4,9 @@ import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AudioCaptureService {
-  final AudioRecorder _recorder = AudioRecorder();
+  // Créé à la première utilisation (et non à la construction) pour que
+  // construire ce service ne touche pas la plateforme (tests).
+  late final AudioRecorder _recorder = AudioRecorder();
   StreamSubscription<Uint8List>? _streamSub;
   bool _isRecording = false;
   int _bytesReceived = 0;

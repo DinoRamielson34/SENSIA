@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/detection_test_screen.dart';
+import 'screens/listening_screen.dart';
 
 void main() => runApp(const IzahayApp());
 
@@ -12,7 +12,7 @@ class IzahayApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SENSIA',
       theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      home: const DetectionTestScreen(),
+      home: const ListeningScreen(),
     );
   }
 }

@@ -69,6 +69,7 @@ flutter:
 
   assets:
     - assets/models/yamnet.tflite
+    - assets/images/
     - assets/models/yamnet_class_map.csv
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../config/haptic_pattern_config.dart';
 import '../haptics/haptic_engine.dart';
@@ -59,8 +60,27 @@ class SoundHapticPipeline extends ChangeNotifier {
         _yamnetService = yamnetService ?? YamnetService(),
         _filterService = filterService ?? SoundFilterService() {
     HapticPatternConfig.registerAll(hapticEngine);
-    // Tant que l'écoute n'a pas été démarrée, aucun son micro n'est traité.
     _processor.stopListening();
+    _initForegroundTask();
+  }
+
+  void _initForegroundTask() {
+    FlutterForegroundTask.init(
+      androidNotificationOptions: AndroidNotificationOptions(
+        channelId: 'sensia_listening',
+        channelName: 'SENSIA Écoute',
+        channelDescription: 'Écoute sonore en arrière-plan',
+        channelImportance: NotificationChannelImportance.LOW,
+        priority: NotificationPriority.LOW,
+      ),
+      iosNotificationOptions: const IOSNotificationOptions(),
+      foregroundTaskOptions: ForegroundTaskOptions(
+        eventAction: ForegroundTaskEventAction.nothing(),
+        autoRunOnBoot: false,
+        allowWakeLock: true,
+        allowWifiLock: false,
+      ),
+    );
   }
 
   /// true pendant que le microphone est écouté.
@@ -135,6 +155,10 @@ class SoundHapticPipeline extends ChangeNotifier {
     _isListening = true;
     _error = null;
     notifyListeners();
+    FlutterForegroundTask.startService(
+      notificationTitle: 'SENSIA',
+      notificationText: 'Écoute sonore en cours…',
+    );
   }
 
   /// Arrête l'écoute : plus aucune nouvelle détection n'est traitée.
@@ -150,6 +174,7 @@ class SoundHapticPipeline extends ChangeNotifier {
     await _audioService.stop();
     _filterService.reset();
     await _hapticEngine.stop();
+    FlutterForegroundTask.stopService();
     notifyListeners();
   }
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
+import 'package:izahay/localization/language_storage.dart';
+import 'package:izahay/localization/locale_controller.dart';
+import 'package:izahay/localization/locale_scope.dart';
 import 'package:izahay/screens/listening_screen.dart';
 import 'package:izahay/config/listening_tutorial_steps.dart';
 import 'package:izahay/services/sound_haptic_pipeline.dart';
@@ -202,5 +205,26 @@ void main() {
     await settle(tester);
     expect(menuOpen.value, isFalse);
     expect(tutorial.isActive, isFalse);
+  });
+
+  testWidgets('affiche les libellés en malagasy par défaut, bascule au tap', (
+    tester,
+  ) async {
+    final controller = LocaleController(storage: MemoryLanguageStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocaleScope(
+          controller: controller,
+          child: ListeningScreen(pipeline: _FakePipeline()),
+        ),
+      ),
+    );
+
+    expect(find.text('Tsy misy feo'), findsOneWidget);
+
+    await tester.tap(find.text('FR'));
+    await tester.pump();
+
+    expect(find.text('Aucun son'), findsOneWidget);
   });
 }

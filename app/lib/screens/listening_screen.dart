@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../haptics/haptic_engine.dart';
 import '../haptics/vibration_executor.dart';
+import '../localization/locale_scope.dart';
 import '../services/sound_haptic_pipeline.dart';
 import '../sound_events/sound_event_result.dart';
 import '../theme/app_theme.dart';
 import '../tutorial/tutorial_controller.dart';
 import '../tutorial/tutorial_scope.dart';
 import '../widgets/home_menu.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 /// Écran principal : démarre / arrête l'écoute du pipeline son → haptique.
@@ -105,6 +107,13 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 Positioned.fill(
                   child: TutorialScope(controller: widget.tutorial!),
                 ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: LanguageToggleButton(
+                  controller: LocaleScope.controllerOf(context),
+                ),
+              ),
             ],
           ),
         );
@@ -211,9 +220,10 @@ class _PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Semantics(
       button: true,
-      label: listening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute',
+      label: listening ? strings.stopListening : strings.startListening,
       child: GestureDetector(
         onTap: onPressed,
         behavior: HitTestBehavior.opaque,
@@ -261,22 +271,6 @@ const _categoryIcons = <String, IconData>{
   'dog_bark': Icons.pets,
 };
 
-const _categoryLabels = <String, String>{
-  'train': 'Train',
-  'fire_alarm': 'Alarme incendie',
-  'smoke_alarm': 'Détecteur de fumée',
-  'car_horn': 'Klaxon',
-  'emergency_siren': 'Sirène d\'urgence',
-  'car_alarm': 'Alarme voiture',
-  'baby_cry': 'Pleurs de bébé',
-  'alarm': 'Alarme',
-  'doorbell': 'Sonnette',
-  'door_knock': 'Frappe à la porte',
-  'telephone': 'Téléphone',
-  'alarm_clock': 'Réveil',
-  'dog_bark': 'Aboiement',
-};
-
 /// Carte du dernier son détecté.
 class _SoundCard extends StatelessWidget {
   final SoundEventResult? result;
@@ -285,13 +279,14 @@ class _SoundCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     final category = result?.event.category;
     final icon = category == null
         ? null
         : _categoryIcons[category] ?? Icons.volume_up;
     final label = category == null
-        ? 'Aucun son'
-        : _categoryLabels[category] ?? category;
+        ? strings.noSound
+        : strings.listeningCategoryLabels[category] ?? category;
     return Container(
       width: 150,
       height: 70,

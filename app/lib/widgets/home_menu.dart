@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../localization/app_strings.dart';
+import '../localization/locale_scope.dart';
 import '../theme/app_theme.dart';
 
 /// Bouton « home » qui se déplie en quatre raccourcis autour d'un bouton fermer.
@@ -108,6 +110,7 @@ class _HomeMenuState extends State<HomeMenu>
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return SizedBox(
       height: HomeMenu.height,
       child: LayoutBuilder(
@@ -159,7 +162,7 @@ class _HomeMenuState extends State<HomeMenu>
             children: [
               pill(
                 'association',
-                'Association',
+                strings.pillAssociation,
                 Icons.groups_outlined,
                 widget.onAssociation,
                 left: true,
@@ -167,7 +170,7 @@ class _HomeMenuState extends State<HomeMenu>
               ),
               pill(
                 'help',
-                'Help',
+                strings.pillHelp,
                 Icons.checklist,
                 widget.onHelp,
                 left: false,
@@ -175,7 +178,7 @@ class _HomeMenuState extends State<HomeMenu>
               ),
               pill(
                 'settings',
-                'Settings',
+                strings.pillSettings,
                 Icons.settings_voice_outlined,
                 widget.onSettings,
                 left: true,
@@ -183,7 +186,7 @@ class _HomeMenuState extends State<HomeMenu>
               ),
               pill(
                 'backup',
-                'Sauvegarde',
+                strings.pillBackup,
                 Icons.person_outline,
                 widget.onBackup,
                 left: false,
@@ -229,7 +232,7 @@ class _HomeMenuState extends State<HomeMenu>
                   },
                   child: _target(
                     'menu',
-                    _CenterButton(open: _open, onTap: _toggle),
+                    _CenterButton(open: _open, onTap: _toggle, strings: strings),
                   ),
                 ),
               ),
@@ -271,14 +274,15 @@ class _Pill extends StatelessWidget {
 class _CenterButton extends StatelessWidget {
   final bool open;
   final VoidCallback onTap;
+  final AppStrings strings;
 
-  const _CenterButton({required this.open, required this.onTap});
+  const _CenterButton({required this.open, required this.onTap, required this.strings});
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: open ? 'Fermer le menu' : 'Accueil',
+      label: open ? strings.centerFermerMenu : strings.centerAccueil,
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(

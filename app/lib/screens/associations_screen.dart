@@ -23,7 +23,8 @@ class AssociationsScreen extends StatelessWidget {
     this.onHome,
   });
 
-  static const _defaultBanner = 'assets/images/association_banner_placeholder.png';
+  static const _defaultBanner =
+      'assets/images/association_banner_placeholder.png';
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +92,8 @@ class _AssociationCard extends StatelessWidget {
                 _framed(
                   height: 110,
                   asset:
-                      association.bannerAsset ?? AssociationsScreen._defaultBanner,
+                      association.bannerAsset ??
+                      AssociationsScreen._defaultBanner,
                 ),
                 SizedBox(
                   height: 25,

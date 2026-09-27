@@ -31,7 +31,8 @@ class _BackupScreenState extends State<BackupScreen> {
     ProfileSyncResult.saved => 'Données sauvegardées.',
     ProfileSyncResult.restored => 'Données restaurées.',
     ProfileSyncResult.nothingToRestore => 'Aucune sauvegarde trouvée.',
-    ProfileSyncResult.unavailable => 'Sauvegarde indisponible (pas de Firebase).',
+    ProfileSyncResult.unavailable =>
+      'Sauvegarde indisponible (pas de Firebase).',
     ProfileSyncResult.authFailed =>
       'Authentification échouée. Activez l\'auth anonyme dans Firebase Console.',
     ProfileSyncResult.permissionDenied =>
@@ -84,7 +85,9 @@ class _BackupScreenState extends State<BackupScreen> {
                             _BackupButton(
                               label: 'Sauvegarder mes donnees',
                               icon: Icons.favorite_border,
-                              onTap: busy ? null : () => _run(widget.store.save),
+                              onTap: busy
+                                  ? null
+                                  : () => _run(widget.store.save),
                             ),
                             const SizedBox(height: 22),
                             _BackupButton(
@@ -178,7 +181,11 @@ class _BackupButton extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Inter', fontSize: 10, color: color),
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  color: color,
+                ),
               ),
               const SizedBox(height: 10),
               Icon(icon, size: 24, color: color),

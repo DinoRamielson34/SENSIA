@@ -82,10 +82,7 @@ class _VisionProblemScreenState extends State<VisionProblemScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 36),
-        const Padding(
-          padding: EdgeInsets.only(left: 4),
-          child: _BackButton(),
-        ),
+        const Padding(padding: EdgeInsets.only(left: 4), child: _BackButton()),
         const SizedBox(height: 18),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 27),
@@ -148,7 +145,10 @@ class _BackButton extends StatelessWidget {
           width: 48,
           height: 48,
           child: Center(
-            child: CustomPaint(size: Size(8.9, 16.1), painter: _ChevronPainter()),
+            child: CustomPaint(
+              size: Size(8.9, 16.1),
+              painter: _ChevronPainter(),
+            ),
           ),
         ),
       ),
@@ -203,7 +203,7 @@ class _VisionOption extends StatelessWidget {
         child: Container(
           height: 64.2,
           decoration: BoxDecoration(
-            color: selected ? AppColors.primary : AppColors.backgroundVision,
+            color: selected ? AppColors.hover : AppColors.backgroundVision,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.optionBorder, width: 1.2),
           ),
@@ -219,15 +219,11 @@ class _VisionOption extends StatelessWidget {
                     fontFamily: 'Nunito',
                     fontSize: 15.5,
                     fontWeight: FontWeight.w700,
-                    color: selected ? AppColors.onPrimary : AppColors.title,
+                    color: AppColors.title,
                   ),
                 ),
               ),
-              Icon(
-                Icons.fingerprint,
-                size: 28,
-                color: selected ? AppColors.onPrimary : AppColors.title,
-              ),
+              Icon(Icons.fingerprint, size: 28, color: AppColors.title),
               const SizedBox(width: 19),
             ],
           ),

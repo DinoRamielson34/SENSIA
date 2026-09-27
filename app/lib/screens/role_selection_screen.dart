@@ -78,58 +78,57 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
   Widget _buildContent(UserRole? selected) {
     return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 100),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6),
-                        child: Text(
-                          'Êtes-vous...',
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 27,
-                            fontWeight: FontWeight.w700,
-                            height: 1.33,
-                            color: AppColors.title,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _RoleCard(
-                              role: UserRole.accompagnateur,
-                              image: 'assets/images/role_accompagnateur.png',
-                              selected: selected == UserRole.accompagnateur,
-                              onTap: () =>
-                                  _controller.select(UserRole.accompagnateur),
-                            ),
-                          ),
-                          const SizedBox(width: 17),
-                          Expanded(
-                            child: _RoleCard(
-                              role: UserRole.client,
-                              image: 'assets/images/role_client.png',
-                              selected: selected == UserRole.client,
-                              onTap: () => _controller.select(UserRole.client),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      NextButton(
-                        showLabel: false,
-                        onPressed: selected == null
-                            ? null
-                            : () => widget.onContinue?.call(selected),
-                      ),
-                      const SizedBox(height: 96),
-                    ],
-                  ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 100),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            child: Text(
+              'Êtes-vous...',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 27,
+                fontWeight: FontWeight.w700,
+                height: 1.33,
+                color: AppColors.title,
+              ),
+            ),
+          ),
+          const Spacer(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _RoleCard(
+                  role: UserRole.accompagnateur,
+                  image: 'assets/images/role_accompagnateur.png',
+                  selected: selected == UserRole.accompagnateur,
+                  onTap: () => _controller.select(UserRole.accompagnateur),
+                ),
+              ),
+              const SizedBox(width: 17),
+              Expanded(
+                child: _RoleCard(
+                  role: UserRole.client,
+                  image: 'assets/images/role_client.png',
+                  selected: selected == UserRole.client,
+                  onTap: () => _controller.select(UserRole.client),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          NextButton(
+            showLabel: false,
+            onPressed: selected == null
+                ? null
+                : () => widget.onContinue?.call(selected),
+          ),
+          const SizedBox(height: 96),
+        ],
+      ),
     );
   }
 }
@@ -152,7 +151,7 @@ class _RoleCard extends StatefulWidget {
 }
 
 class _RoleCardState extends State<_RoleCard> {
-  // Survol souris ou appui long : fond orange du bouton (état « hover » de la maquette).
+  // Sélectionné, survolé ou appuyé : fond orange du bouton (état « hover » de la maquette).
   bool _hover = false;
   bool _pressed = false;
 
@@ -162,7 +161,7 @@ class _RoleCardState extends State<_RoleCard> {
     final image = widget.image;
     final selected = widget.selected;
     final onTap = widget.onTap;
-    final highlighted = _hover || _pressed;
+    final highlighted = selected || _hover || _pressed;
     return Semantics(
       button: true,
       selected: selected,
@@ -210,20 +209,14 @@ class _RoleCardState extends State<_RoleCard> {
                 height: 60,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: highlighted
-                      ? AppColors.hover
-                      : selected
-                      ? AppColors.primary
-                      : Colors.transparent,
+                  color: highlighted ? AppColors.hover : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.primary),
                 ),
                 child: Icon(
                   Icons.fingerprint,
                   size: 30,
-                  color: selected && !highlighted
-                      ? AppColors.onPrimary
-                      : AppColors.primary,
+                  color: AppColors.primary,
                 ),
               ),
             ],

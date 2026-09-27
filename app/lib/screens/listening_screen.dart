@@ -35,15 +35,6 @@ class ListeningScreen extends StatefulWidget {
 class _ListeningScreenState extends State<ListeningScreen> {
   late final SoundHapticPipeline _pipeline;
 
-  // Les deux derniers sons déclenchés, du plus récent au plus ancien (cartes I et II).
-  final List<SoundEventResult> _recent = [];
-
-  void _track(SoundEventResult? result) {
-    if (result == null || _recent.any((r) => identical(r, result))) return;
-    _recent.insert(0, result);
-    if (_recent.length > 2) _recent.removeLast();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -68,7 +59,6 @@ class _ListeningScreenState extends State<ListeningScreen> {
     return ListenableBuilder(
       listenable: _pipeline,
       builder: (context, _) {
-        _track(_pipeline.lastTriggered);
         return Scaffold(
           backgroundColor: AppColors.background,
           body: Stack(
@@ -112,27 +102,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 ? _pipeline.stop
                 : _pipeline.start,
           ),
-          const SizedBox(height: 7),
-          SizedBox(
-            width: 320,
-            height: 138,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Row(
-                children: [
-                  _SoundCard(
-                    rank: 'I',
-                    result: _recent.isNotEmpty ? _recent[0] : null,
-                  ),
-                  const SizedBox(width: 8),
-                  _SoundCard(
-                    rank: 'II',
-                    result: _recent.length > 1 ? _recent[1] : null,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: 66),
+          _SoundCard(result: _pipeline.lastTriggered),
           if (error != null)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -273,12 +244,11 @@ const _categoryLabels = <String, String>{
   'dog_bark': 'Aboiement',
 };
 
-/// Carte d'un son détecté ; [rank] vaut « I » (le plus récent) ou « II ».
+/// Carte du dernier son détecté.
 class _SoundCard extends StatelessWidget {
-  final String rank;
   final SoundEventResult? result;
 
-  const _SoundCard({required this.rank, required this.result});
+  const _SoundCard({required this.result});
 
   @override
   Widget build(BuildContext context) {
@@ -290,8 +260,8 @@ class _SoundCard extends StatelessWidget {
         ? 'Aucun son'
         : _categoryLabels[category] ?? category;
     return Container(
-      width: 154,
-      height: 130,
+      width: 150,
+      height: 70,
       decoration: BoxDecoration(
         color: AppColors.hover,
         borderRadius: BorderRadius.circular(4),
@@ -303,31 +273,8 @@ class _SoundCard extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-            top: 3,
-            right: 5,
-            child: Container(
-              width: 30,
-              height: 30,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black),
-              ),
-              child: Text(
-                rank,
-                style: const TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w200,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 4,
-            top: 50,
+            left: 6,
+            top: 10,
             width: 144,
             child: Row(
               children: [

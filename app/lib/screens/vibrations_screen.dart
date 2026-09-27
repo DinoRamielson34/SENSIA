@@ -181,7 +181,9 @@ class _RoundAction extends StatelessWidget {
           decoration: const BoxDecoration(
             color: AppColors.primary,
             shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: AppColors.settingRow, offset: Offset(2, 2))],
+            boxShadow: [
+              BoxShadow(color: AppColors.settingRow, offset: Offset(2, 2)),
+            ],
           ),
           child: Icon(icon, size: 30, color: AppColors.hover),
         ),

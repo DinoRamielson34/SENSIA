@@ -121,73 +121,74 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
         children: [
           const Positioned.fill(child: WaveDecor()),
           SafeArea(
-        child: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, _) {
-            final empty = _controller.isEmpty;
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 148, 20, 16),
-                    child: Column(
-                      children: [
-                        _PatternPanel(segments: _controller.segments),
-                        const SizedBox(height: 18),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+            child: ListenableBuilder(
+              listenable: _controller,
+              builder: (context, _) {
+                final empty = _controller.isEmpty;
+                return Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(20, 148, 20, 16),
+                        child: Column(
                           children: [
-                            _SegmentButton(
-                              label: 'Ajouter un son long',
-                              segment: VibrationSegment.long,
-                              onTap: () =>
-                                  _controller.add(VibrationSegment.long),
+                            _PatternPanel(segments: _controller.segments),
+                            const SizedBox(height: 18),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _SegmentButton(
+                                  label: 'Ajouter un son long',
+                                  segment: VibrationSegment.long,
+                                  onTap: () =>
+                                      _controller.add(VibrationSegment.long),
+                                ),
+                                const SizedBox(width: 48),
+                                _SegmentButton(
+                                  label: 'Ajouter un son court',
+                                  segment: VibrationSegment.short,
+                                  onTap: () =>
+                                      _controller.add(VibrationSegment.short),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 48),
-                            _SegmentButton(
-                              label: 'Ajouter un son court',
-                              segment: VibrationSegment.short,
-                              onTap: () =>
-                                  _controller.add(VibrationSegment.short),
+                            const SizedBox(height: 18),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _ActionButton(
+                                  icon: Icons.replay,
+                                  label: 'Effacer le motif',
+                                  onTap: empty ? null : _controller.reset,
+                                ),
+                                const SizedBox(width: 20),
+                                _ActionButton(
+                                  icon: Icons.play_arrow_outlined,
+                                  label: 'Essayer la vibration',
+                                  onTap: empty ? null : _play,
+                                ),
+                                const SizedBox(width: 20),
+                                _ActionButton(
+                                  icon: Icons.check,
+                                  label: 'Valider',
+                                  onTap: empty ? null : _validate,
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 18),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _ActionButton(
-                              icon: Icons.replay,
-                              label: 'Effacer le motif',
-                              onTap: empty ? null : _controller.reset,
-                            ),
-                            const SizedBox(width: 20),
-                            _ActionButton(
-                              icon: Icons.play_arrow_outlined,
-                              label: 'Essayer la vibration',
-                              onTap: empty ? null : _play,
-                            ),
-                            const SizedBox(width: 20),
-                            _ActionButton(
-                              icon: Icons.check,
-                              label: 'Valider',
-                              onTap: empty ? null : _validate,
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                HomeButton(
-                  onPressed:
-                      widget.onHome ?? () => Navigator.of(context).maybePop(),
-                ),
-                const SizedBox(height: 55),
-              ],
-            );
-          },
-        ),
+                    HomeButton(
+                      onPressed:
+                          widget.onHome ??
+                          () => Navigator.of(context).maybePop(),
+                    ),
+                    const SizedBox(height: 55),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),

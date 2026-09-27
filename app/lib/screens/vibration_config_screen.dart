@@ -5,10 +5,12 @@ import '../haptics/haptic_exceptions.dart';
 import '../haptics/models/vibration_pattern.dart';
 import '../haptics/segment_pattern.dart';
 import '../haptics/vibration_executor.dart';
+import '../localization/locale_scope.dart';
 import '../models/vibration_entry.dart';
 import '../models/vibration_segment.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 /// Construit un motif en enchaînant des segments longs et courts.
@@ -93,15 +95,16 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
     final pattern = _controller.toPattern(widget.entry.id);
     if (pattern == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final strings = LocaleScope.of(context);
     try {
       await _hapticEngine.playPattern(pattern);
     } on HapticUnsupportedException {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Cet appareil ne peut pas vibrer.')),
+        SnackBar(content: Text(strings.vibrationUnsupportedMessage)),
       );
     } on InvalidVibrationPatternException {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Motif de vibration invalide.')),
+        SnackBar(content: Text(strings.vibrationInvalidPatternMessage)),
       );
     }
   }
@@ -115,6 +118,7 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -138,14 +142,14 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _SegmentButton(
-                                  label: 'Ajouter un son long',
+                                  label: strings.addLongSegment,
                                   segment: VibrationSegment.long,
                                   onTap: () =>
                                       _controller.add(VibrationSegment.long),
                                 ),
                                 const SizedBox(width: 48),
                                 _SegmentButton(
-                                  label: 'Ajouter un son court',
+                                  label: strings.addShortSegment,
                                   segment: VibrationSegment.short,
                                   onTap: () =>
                                       _controller.add(VibrationSegment.short),
@@ -158,19 +162,19 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
                               children: [
                                 _ActionButton(
                                   icon: Icons.replay,
-                                  label: 'Effacer le motif',
+                                  label: strings.clearPattern,
                                   onTap: empty ? null : _controller.reset,
                                 ),
                                 const SizedBox(width: 20),
                                 _ActionButton(
                                   icon: Icons.play_arrow_outlined,
-                                  label: 'Essayer la vibration',
+                                  label: strings.tryVibration,
                                   onTap: empty ? null : _play,
                                 ),
                                 const SizedBox(width: 20),
                                 _ActionButton(
                                   icon: Icons.check,
-                                  label: 'Valider',
+                                  label: strings.validate,
                                   onTap: empty ? null : _validate,
                                 ),
                               ],
@@ -188,6 +192,13 @@ class _VibrationConfigScreenState extends State<VibrationConfigScreen> {
                   ],
                 );
               },
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: LanguageToggleButton(
+              controller: LocaleScope.controllerOf(context),
             ),
           ),
         ],

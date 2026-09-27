@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
+import 'package:izahay/localization/language_storage.dart';
+import 'package:izahay/localization/locale_controller.dart';
+import 'package:izahay/localization/locale_scope.dart';
 import 'package:izahay/models/vibration_entry.dart';
 import 'package:izahay/models/vibration_segment.dart';
 import 'package:izahay/screens/vibration_config_screen.dart';
@@ -86,5 +89,20 @@ void main() {
 
   test('un motif vide n\'existe pas', () {
     expect(VibrationConfigController().toPattern('x'), isNull);
+  });
+
+  testWidgets('affiche les actions en malagasy par défaut', (tester) async {
+    final controller = LocaleController(storage: MemoryLanguageStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocaleScope(
+          controller: controller,
+          child: VibrationConfigScreen(entry: const VibrationEntry(id: 'x', label: 'X')),
+        ),
+      ),
+    );
+
+    expect(find.bySemanticsLabel('Ampio feo lava'), findsOneWidget);
+    expect(find.bySemanticsLabel('Ekeo'), findsOneWidget);
   });
 }

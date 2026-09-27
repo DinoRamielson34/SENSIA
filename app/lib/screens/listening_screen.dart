@@ -5,6 +5,8 @@ import '../haptics/vibration_executor.dart';
 import '../services/sound_haptic_pipeline.dart';
 import '../sound_events/sound_event_result.dart';
 import '../theme/app_theme.dart';
+import '../tutorial/tutorial_controller.dart';
+import '../tutorial/tutorial_scope.dart';
 import '../widgets/home_menu.dart';
 import '../widgets/wave_decor.dart';
 
@@ -19,6 +21,12 @@ class ListeningScreen extends StatefulWidget {
   final VoidCallback? onSettings;
   final VoidCallback? onBackup;
 
+  /// Tutoriel de l'écran (spotlight + bulles) ; null = pas de tutoriel.
+  final TutorialController? tutorial;
+
+  /// Ouverture du menu « home », pilotée par le tutoriel.
+  final ValueNotifier<bool>? menuOpen;
+
   const ListeningScreen({
     super.key,
     this.pipeline,
@@ -26,6 +34,8 @@ class ListeningScreen extends StatefulWidget {
     this.onHelp,
     this.onSettings,
     this.onBackup,
+    this.tutorial,
+    this.menuOpen,
   });
 
   @override
@@ -46,10 +56,24 @@ class _ListeningScreenState extends State<ListeningScreen> {
           ),
         );
     _pipeline.loadModel();
+    widget.tutorial?.addListener(_closeMenuWhenTutorialEnds);
+    // Premier(s) lancement(s) : le tutoriel se propose une fois l'écran dessiné.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.tutorial?.startIfNeeded(),
+    );
   }
+
+  /// Referme le menu que le tutoriel a ouvert quand il se termine.
+  void _closeMenuWhenTutorialEnds() {
+    if (widget.tutorial?.isActive == false) widget.menuOpen?.value = false;
+  }
+
+  Widget _target(String id, Widget child) =>
+      widget.tutorial?.target(id, child) ?? child;
 
   @override
   void dispose() {
+    widget.tutorial?.removeListener(_closeMenuWhenTutorialEnds);
     if (widget.pipeline == null) _pipeline.dispose();
     super.dispose();
   }
@@ -77,6 +101,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
                   ),
                 ),
               ),
+              if (widget.tutorial != null)
+                Positioned.fill(
+                  child: TutorialScope(controller: widget.tutorial!),
+                ),
             ],
           ),
         );
@@ -93,17 +121,20 @@ class _ListeningScreenState extends State<ListeningScreen> {
           const SizedBox(height: 78),
           const _ToolBar(),
           const SizedBox(height: 23),
-          _PlayButton(
-            listening: _pipeline.isListening,
-            loading: _pipeline.modelLoading,
-            onPressed: !_pipeline.modelReady
-                ? null
-                : _pipeline.isListening
-                ? _pipeline.stop
-                : _pipeline.start,
+          _target(
+            'play',
+            _PlayButton(
+              listening: _pipeline.isListening,
+              loading: _pipeline.modelLoading,
+              onPressed: !_pipeline.modelReady
+                  ? null
+                  : _pipeline.isListening
+                  ? _pipeline.stop
+                  : _pipeline.start,
+            ),
           ),
           const SizedBox(height: 66),
-          _SoundCard(result: _pipeline.lastTriggered),
+          _target('lastSound', _SoundCard(result: _pipeline.lastTriggered)),
           if (error != null)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -122,6 +153,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
             onHelp: widget.onHelp,
             onSettings: widget.onSettings,
             onBackup: widget.onBackup,
+            openNotifier: widget.menuOpen,
+            targetBuilder: widget.tutorial?.target,
           ),
           const SizedBox(height: 18),
         ],

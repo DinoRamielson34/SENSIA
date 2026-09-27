@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
 import 'package:izahay/main.dart';
+import 'package:izahay/tutorial/tutorial_storage.dart';
 import 'package:izahay/models/user_profile.dart';
 import 'package:izahay/models/user_role.dart';
 import 'package:izahay/models/vibration_segment.dart';
@@ -27,6 +28,10 @@ class _Pipeline extends SoundHapticPipeline {
   bool get modelLoading => false;
 }
 
+/// Tutoriel déjà terminé : il ne recouvre pas l'écran pendant le test.
+MemoryTutorialStorage _doneTutorial() =>
+    MemoryTutorialStorage(const TutorialProgress(completed: true));
+
 void main() {
   testWidgets('parcours complet : réglages, vibrations et sauvegarde agissent '
       'sur le vrai pipeline', (tester) async {
@@ -38,7 +43,11 @@ void main() {
     final pipeline = _Pipeline(executor);
     final repository = FakeProfileRepository();
     await tester.pumpWidget(
-      IzahayApp(pipeline: pipeline, profileRepository: repository),
+      IzahayApp(
+        pipeline: pipeline,
+        profileRepository: repository,
+        tutorialStorage: _doneTutorial(),
+      ),
     );
 
     // Le bouton home pulse en boucle : on avance par durée, pas par
@@ -141,7 +150,11 @@ void main() {
 
     expect(pipeline.isCategoryEnabled('train'), isTrue);
     await tester.pumpWidget(
-      IzahayApp(pipeline: pipeline, profileRepository: repository),
+      IzahayApp(
+        pipeline: pipeline,
+        profileRepository: repository,
+        tutorialStorage: _doneTutorial(),
+      ),
     );
     await tester.pump();
 
@@ -156,7 +169,11 @@ void main() {
       final pipeline = _Pipeline(FakeVibrationExecutor());
       final repository = FakeProfileRepository()..failing = true;
       await tester.pumpWidget(
-        IzahayApp(pipeline: pipeline, profileRepository: repository),
+        IzahayApp(
+          pipeline: pipeline,
+          profileRepository: repository,
+          tutorialStorage: _doneTutorial(),
+        ),
       );
       await tester.pump();
 

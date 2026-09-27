@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
 import 'package:izahay/screens/listening_screen.dart';
+import 'package:izahay/config/listening_tutorial_steps.dart';
 import 'package:izahay/services/sound_haptic_pipeline.dart';
+import 'package:izahay/tutorial/tutorial_controller.dart';
+import 'package:izahay/tutorial/tutorial_storage.dart';
 
 import 'haptics/fake_vibration_executor.dart';
 
@@ -151,5 +154,53 @@ void main() {
     );
 
     expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('le tutoriel guide pas à pas et le menu s\'ouvre tout seul', (
+    tester,
+  ) async {
+    final menuOpen = ValueNotifier(false);
+    // Attente de l'étape (préparation) puis fondu de la bulle.
+    Future<void> settle(WidgetTester t) async {
+      await t.pump(const Duration(milliseconds: 600));
+      await t.pump(const Duration(milliseconds: 300));
+    }
+
+    final tutorial = TutorialController(
+      steps: listeningTutorialSteps(menuOpen),
+      storage: MemoryTutorialStorage(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ListeningScreen(
+          pipeline: _FakePipeline(),
+          tutorial: tutorial,
+          menuOpen: menuOpen,
+        ),
+      ),
+    );
+    // Le bouton home pulse en boucle : pas de pumpAndSettle.
+    await settle(tester);
+    expect(find.text('Commencer'), findsOneWidget);
+
+    // Étapes 1 → 3 : play, dernier son, menu (encore fermé).
+    for (var i = 0; i < 2; i++) {
+      await tester.ensureVisible(find.text('Suivant'));
+      await tester.tap(find.text('Suivant'));
+      await settle(tester);
+    }
+    expect(find.text('Vos sons'), findsNothing);
+    expect(menuOpen.value, isFalse);
+
+    // Étape 4 : le menu s'ouvre pour montrer ses boutons.
+    await tester.tap(find.text('Suivant'));
+    await settle(tester);
+    expect(menuOpen.value, isTrue);
+    expect(find.text('Vos sons'), findsOneWidget);
+
+    await tester.tap(find.text('Passer le tutoriel'));
+    await settle(tester);
+    expect(menuOpen.value, isFalse);
+    expect(tutorial.isActive, isFalse);
   });
 }

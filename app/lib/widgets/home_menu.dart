@@ -11,12 +11,21 @@ class HomeMenu extends StatefulWidget {
   final VoidCallback? onSettings;
   final VoidCallback? onBackup;
 
+  /// Permet d'ouvrir ou fermer le menu depuis l'extérieur (ex. tutoriel).
+  final ValueNotifier<bool>? openNotifier;
+
+  /// Marque un élément comme cible du tutoriel : reçoit l'identifiant
+  /// (« menu », « association », « help », « settings », « backup »).
+  final Widget Function(String id, Widget child)? targetBuilder;
+
   const HomeMenu({
     super.key,
     this.onAssociation,
     this.onHelp,
     this.onSettings,
     this.onBackup,
+    this.openNotifier,
+    this.targetBuilder,
   });
 
   /// Hauteur occupée par le menu déplié ; le bouton fermé reste centré dedans.
@@ -44,6 +53,20 @@ class _HomeMenuState extends State<HomeMenu>
 
   bool _open = false;
 
+  Widget _target(String id, Widget child) =>
+      widget.targetBuilder?.call(id, child) ?? child;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.openNotifier?.addListener(_onExternalOpen);
+  }
+
+  void _onExternalOpen() {
+    final open = widget.openNotifier!.value;
+    if (open != _open) _setOpen(open);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -52,6 +75,7 @@ class _HomeMenuState extends State<HomeMenu>
 
   @override
   void dispose() {
+    widget.openNotifier?.removeListener(_onExternalOpen);
     _pulse.dispose();
     super.dispose();
   }
@@ -71,6 +95,7 @@ class _HomeMenuState extends State<HomeMenu>
 
   void _setOpen(bool open) {
     setState(() => _open = open);
+    widget.openNotifier?.value = open;
     _syncPulse();
   }
 
@@ -94,6 +119,7 @@ class _HomeMenuState extends State<HomeMenu>
           // Position d'une pastille : dans son coin quand le menu est ouvert,
           // repliée derrière le bouton central sinon.
           Widget pill(
+            String id,
             String label,
             IconData icon,
             VoidCallback? onTap, {
@@ -116,10 +142,13 @@ class _HomeMenuState extends State<HomeMenu>
                 opacity: _open ? 1 : 0,
                 child: IgnorePointer(
                   ignoring: !_open,
-                  child: _Pill(
-                    label: label,
-                    icon: icon,
-                    onTap: () => _select(onTap),
+                  child: _target(
+                    id,
+                    _Pill(
+                      label: label,
+                      icon: icon,
+                      onTap: () => _select(onTap),
+                    ),
                   ),
                 ),
               ),
@@ -128,10 +157,38 @@ class _HomeMenuState extends State<HomeMenu>
 
           return Stack(
             children: [
-              pill('Association', Icons.groups_outlined, widget.onAssociation, left: true, top: true),
-              pill('Help', Icons.checklist, widget.onHelp, left: false, top: true),
-              pill('Settings', Icons.settings_voice_outlined, widget.onSettings, left: true, top: false),
-              pill('Sauvegarde', Icons.person_outline, widget.onBackup, left: false, top: false),
+              pill(
+                'association',
+                'Association',
+                Icons.groups_outlined,
+                widget.onAssociation,
+                left: true,
+                top: true,
+              ),
+              pill(
+                'help',
+                'Help',
+                Icons.checklist,
+                widget.onHelp,
+                left: false,
+                top: true,
+              ),
+              pill(
+                'settings',
+                'Settings',
+                Icons.settings_voice_outlined,
+                widget.onSettings,
+                left: true,
+                top: false,
+              ),
+              pill(
+                'backup',
+                'Sauvegarde',
+                Icons.person_outline,
+                widget.onBackup,
+                left: false,
+                top: false,
+              ),
               Positioned(
                 left: centerLeft,
                 top: centerTop,
@@ -170,7 +227,10 @@ class _HomeMenuState extends State<HomeMenu>
                       ],
                     );
                   },
-                  child: _CenterButton(open: _open, onTap: _toggle),
+                  child: _target(
+                    'menu',
+                    _CenterButton(open: _open, onTap: _toggle),
+                  ),
                 ),
               ),
             ],

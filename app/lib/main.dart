@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'config/listening_tutorial_steps.dart';
 import 'config/sound_priority_config.dart';
 import 'firebase_options.dart';
 import 'haptics/haptic_engine.dart';
@@ -25,6 +26,8 @@ import 'screens/vibration_config_screen.dart';
 import 'screens/vibrations_screen.dart';
 import 'screens/vision_problem_screen.dart';
 import 'services/sound_haptic_pipeline.dart';
+import 'tutorial/tutorial_controller.dart';
+import 'tutorial/tutorial_storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,17 +38,14 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     profileRepository = FirestoreProfileRepository();
-    historySink = HistoryResultSink(
-      repository: FirestoreHistoryRepository(),
-    );
+    historySink = HistoryResultSink(repository: FirestoreHistoryRepository());
   } on Exception {
     // Sans Firebase l'app reste utilisable : la sauvegarde signale seulement
     // qu'elle est indisponible.
   }
-  runApp(IzahayApp(
-    profileRepository: profileRepository,
-    historySink: historySink,
-  ));
+  runApp(
+    IzahayApp(profileRepository: profileRepository, historySink: historySink),
+  );
 }
 
 class IzahayApp extends StatefulWidget {
@@ -58,11 +58,15 @@ class IzahayApp extends StatefulWidget {
   /// Pipeline partagé par tous les écrans ; créé par l'app s'il est absent.
   final SoundHapticPipeline? pipeline;
 
+  /// Mémoire du tutoriel ; stockage local persistant par défaut.
+  final TutorialStorage? tutorialStorage;
+
   const IzahayApp({
     super.key,
     this.profileRepository,
     this.historySink,
     this.pipeline,
+    this.tutorialStorage,
   });
 
   @override
@@ -76,10 +80,17 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
 
   late final ProfileStore _profile;
   late final SoundHapticPipeline _pipeline;
+  late final ValueNotifier<bool> _menuOpen;
+  late final TutorialController _tutorial;
 
   @override
   void initState() {
     super.initState();
+    _menuOpen = ValueNotifier(false);
+    _tutorial = TutorialController(
+      steps: listeningTutorialSteps(_menuOpen),
+      storage: widget.tutorialStorage ?? SharedPreferencesTutorialStorage(),
+    );
     _pipeline =
         widget.pipeline ??
         SoundHapticPipeline(
@@ -109,6 +120,8 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _profile.dispose();
+    _tutorial.dispose();
+    _menuOpen.dispose();
     if (widget.pipeline == null) _pipeline.dispose();
     super.dispose();
   }
@@ -138,13 +151,15 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
 
   Widget _listening(BuildContext context) => ListeningScreen(
     pipeline: _pipeline,
+    tutorial: _tutorial,
+    menuOpen: _menuOpen,
     onAssociation: () => _open(context, (_) => const AssociationsScreen()),
-    onHelp: () => _open(context, (_) => _settings()),
+    onHelp: () => _open(context, _settings),
     onSettings: () => _open(context, _vibrations),
     onBackup: () => _open(context, (_) => BackupScreen(store: _profile)),
   );
 
-  Widget _settings() => SettingsScreen(
+  Widget _settings(BuildContext context) => SettingsScreen(
     initialValues: {
       for (final category in _knownCategories)
         category: _pipeline.isCategoryEnabled(category),
@@ -152,6 +167,11 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
     onChanged: (id, value) {
       _pipeline.setCategoryEnabled(id, value);
       _profile.setSetting(id, value);
+    },
+    // Retour à l'écran principal puis relance du tutoriel.
+    onReplayTutorial: () {
+      Navigator.of(context).pop();
+      _tutorial.restart();
     },
   );
 

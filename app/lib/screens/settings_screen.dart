@@ -42,6 +42,9 @@ class SettingsScreen extends StatefulWidget {
   /// Appelé au tap sur le bouton « home » ; par défaut, revient en arrière.
   final VoidCallback? onHome;
 
+  /// Si fourni, affiche « Revoir le tutoriel » en bas de la liste.
+  final VoidCallback? onReplayTutorial;
+
   const SettingsScreen({
     super.key,
     this.categories,
@@ -49,6 +52,7 @@ class SettingsScreen extends StatefulWidget {
     this.initialValues = const {},
     this.onChanged,
     this.onHome,
+    this.onReplayTutorial,
   });
 
   @override
@@ -117,6 +121,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ],
                           const SizedBox(height: 20),
                         ],
+                        if (widget.onReplayTutorial != null)
+                          _ReplayTutorialRow(onTap: widget.onReplayTutorial!),
                       ],
                     ),
                   ),
@@ -212,6 +218,48 @@ class _OptionRow extends StatelessWidget {
                   border: Border.all(color: AppColors.primary),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Ligne d'action « Revoir le tutoriel », au style des lignes de réglage.
+class _ReplayTutorialRow extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ReplayTutorialRow({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Revoir le tutoriel',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: AppColors.settingRow,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Revoir le tutoriel',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+              ),
+              Icon(Icons.play_circle_outline, size: 24, color: Colors.black),
             ],
           ),
         ),

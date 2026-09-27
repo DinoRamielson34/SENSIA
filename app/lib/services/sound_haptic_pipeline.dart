@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../config/haptic_pattern_config.dart';
+import '../config/sound_labels.dart';
 import '../haptics/haptic_engine.dart';
 import '../haptics/haptic_exceptions.dart';
 import '../haptics/models/vibration_pattern.dart';
@@ -147,6 +148,13 @@ class SoundHapticPipeline extends ChangeNotifier {
       return;
     }
 
+    // Best-effort : sur Android 13+, sans cette permission la notification
+    // (dont celle du son détecté) reste invisible, mais l'écoute continue.
+    // `.ignore()` (et non `unawaited`) : cet appel du plugin, contrairement
+    // aux autres, ne rattrape pas lui-même ses erreurs (ex. binding absent
+    // en test) ; sans ça, l'erreur remonterait de façon non gérée.
+    FlutterForegroundTask.requestNotificationPermission().ignore();
+
     _filterService.reset();
     final started = await _audioService.start(onFrame: _onAudioFrame);
     if (!started) {
@@ -228,11 +236,30 @@ class SoundHapticPipeline extends ChangeNotifier {
       if (result.status == SoundEventStatus.triggered) {
         shown = result;
         _lastTriggered = result;
+        _notifyDetection(result);
         break;
       }
     }
     _lastResult = shown;
     notifyListeners();
+  }
+
+  /// Met à jour la notification persistante de l'écoute avec le son qui
+  /// vient de faire vibrer le téléphone : seul repère si l'utilisateur ne
+  /// regarde pas l'écran (verrouillé, autre appli...). Reste silencieuse
+  /// (canal `LOW`, voir [_initForegroundTask]) : la vibration a déjà
+  /// alerté, la notification ne fait qu'expliquer ce qui a été détecté.
+  /// Sans effet si l'écoute n'est pas active (aucun service à mettre à
+  /// jour) ; échoue silencieusement hors Android.
+  void _notifyDetection(SoundEventResult result) {
+    if (!_isListening) return;
+    unawaited(
+      FlutterForegroundTask.updateService(
+        notificationTitle: 'SENSIA',
+        notificationText:
+            'Son détecté : ${SoundLabels.of(result.event.category)}',
+      ),
+    );
   }
 
   /// Convertit une détection de l'IA en événement standardisé pour le

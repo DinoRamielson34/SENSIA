@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:izahay/localization/language_storage.dart';
+import 'package:izahay/localization/locale_controller.dart';
+import 'package:izahay/localization/locale_scope.dart';
 import 'package:izahay/models/association.dart';
 import 'package:izahay/screens/associations_screen.dart';
 
@@ -50,5 +53,16 @@ void main() {
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     expect(find.byType(AssociationsScreen), findsNothing);
+  });
+
+  testWidgets('affiche le titre en malagasy par défaut', (tester) async {
+    final controller = LocaleController(storage: MemoryLanguageStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocaleScope(controller: controller, child: const AssociationsScreen()),
+      ),
+    );
+
+    expect(find.text('Mitadiava\nvondrona afaka\nmanampy anao.'), findsOneWidget);
   });
 }

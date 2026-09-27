@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../config/associations.dart';
+import '../localization/app_strings.dart';
+import '../localization/locale_scope.dart';
 import '../models/association.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 class AssociationsScreen extends StatelessWidget {
@@ -28,6 +31,7 @@ class AssociationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -40,9 +44,9 @@ class AssociationsScreen extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 17, 20, 16),
                     children: [
-                      const Text(
-                        'Trouvez\nquelles entités pour\nvous aider.',
-                        style: TextStyle(
+                      Text(
+                        strings.associationsTitle,
+                        style: const TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 27,
                           fontWeight: FontWeight.w700,
@@ -55,6 +59,7 @@ class AssociationsScreen extends StatelessWidget {
                         if (i > 0) const SizedBox(height: 21),
                         _AssociationCard(
                           association: associations[i],
+                          strings: strings,
                           onContact: () => onContact?.call(associations[i]),
                         ),
                       ],
@@ -68,6 +73,13 @@ class AssociationsScreen extends StatelessWidget {
               ],
             ),
           ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: LanguageToggleButton(
+              controller: LocaleScope.controllerOf(context),
+            ),
+          ),
         ],
       ),
     );
@@ -76,9 +88,14 @@ class AssociationsScreen extends StatelessWidget {
 
 class _AssociationCard extends StatelessWidget {
   final Association association;
+  final AppStrings strings;
   final VoidCallback onContact;
 
-  const _AssociationCard({required this.association, required this.onContact});
+  const _AssociationCard({
+    required this.association,
+    required this.strings,
+    required this.onContact,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +147,7 @@ class _AssociationCard extends StatelessWidget {
           const SizedBox(width: 20),
           Semantics(
             button: true,
-            label: 'Contacter ${association.name}',
+            label: strings.contactAssociation(association.name),
             child: GestureDetector(
               onTap: onContact,
               child: Container(

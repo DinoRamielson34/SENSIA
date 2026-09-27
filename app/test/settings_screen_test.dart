@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:izahay/localization/language_storage.dart';
+import 'package:izahay/localization/locale_controller.dart';
+import 'package:izahay/localization/locale_scope.dart';
 import 'package:izahay/models/settings_category.dart';
 import 'package:izahay/screens/settings_screen.dart';
 
@@ -58,5 +61,22 @@ void main() {
     await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsScreen), findsNothing);
+  });
+
+  testWidgets('affiche le titre et les catégories réelles en malagasy', (
+    tester,
+  ) async {
+    final controller = LocaleController(storage: MemoryLanguageStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocaleScope(
+          controller: controller,
+          child: const SettingsScreen(),
+        ),
+      ),
+    );
+
+    expect(find.text('Fandrindrana ny feo'), findsOneWidget);
+    expect(find.text('Jereo indray ny fampianarana'), findsNothing);
   });
 }

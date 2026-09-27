@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../config/settings_categories.dart';
+import '../localization/app_strings.dart';
+import '../localization/locale_scope.dart';
 import '../models/settings_category.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 class SettingsController extends ChangeNotifier {
@@ -61,15 +64,19 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late final SettingsController _controller;
-  late final List<SettingsCategory> _categories =
-      widget.categories ?? SettingsCategories.all;
+
+  List<SettingsCategory> _categories(BuildContext context) =>
+      widget.categories ?? SettingsCategories.build(LocaleScope.of(context));
 
   @override
   void initState() {
     super.initState();
     _controller =
         widget.controller ??
-        SettingsController(_categories, initialValues: widget.initialValues);
+        SettingsController(
+          widget.categories ?? SettingsCategories.build(AppStrings.fr),
+          initialValues: widget.initialValues,
+        );
   }
 
   @override
@@ -85,6 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -99,9 +107,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     builder: (context, _) => ListView(
                       padding: const EdgeInsets.fromLTRB(20, 89, 20, 16),
                       children: [
-                        const Text(
-                          'Parametres des sons',
-                          style: TextStyle(
+                        Text(
+                          strings.settingsTitle,
+                          style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 27,
                             fontWeight: FontWeight.w700,
@@ -109,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         const SizedBox(height: 21),
-                        for (final category in _categories) ...[
+                        for (final category in _categories(context)) ...[
                           _CategoryHeader(title: category.title),
                           for (final option in category.options) ...[
                             const SizedBox(height: 4),
@@ -122,7 +130,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           const SizedBox(height: 20),
                         ],
                         if (widget.onReplayTutorial != null)
-                          _ReplayTutorialRow(onTap: widget.onReplayTutorial!),
+                          _ReplayTutorialRow(
+                            label: strings.replayTutorial,
+                            onTap: widget.onReplayTutorial!,
+                          ),
                       ],
                     ),
                   ),
@@ -133,6 +144,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 55),
               ],
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: LanguageToggleButton(
+              controller: LocaleScope.controllerOf(context),
             ),
           ),
         ],
@@ -228,15 +246,16 @@ class _OptionRow extends StatelessWidget {
 
 /// Ligne d'action « Revoir le tutoriel », au style des lignes de réglage.
 class _ReplayTutorialRow extends StatelessWidget {
+  final String label;
   final VoidCallback onTap;
 
-  const _ReplayTutorialRow({required this.onTap});
+  const _ReplayTutorialRow({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Revoir le tutoriel',
+      label: label,
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
@@ -248,18 +267,18 @@ class _ReplayTutorialRow extends StatelessWidget {
             color: AppColors.settingRow,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Revoir le tutoriel',
-                style: TextStyle(
+                label,
+                style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
                   color: Colors.black,
                 ),
               ),
-              Icon(Icons.play_circle_outline, size: 24, color: Colors.black),
+              const Icon(Icons.play_circle_outline, size: 24, color: Colors.black),
             ],
           ),
         ),

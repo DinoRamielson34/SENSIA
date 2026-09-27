@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../localization/app_strings.dart';
+import '../localization/locale_scope.dart';
 import '../profile/profile_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 /// Sauvegarde et restauration des données de l'utilisateur.
@@ -27,29 +30,30 @@ class _BackupScreenState extends State<BackupScreen> {
     _userId = widget.store.userId();
   }
 
-  static String _message(ProfileSyncResult result) => switch (result) {
-    ProfileSyncResult.saved => 'Données sauvegardées.',
-    ProfileSyncResult.restored => 'Données restaurées.',
-    ProfileSyncResult.nothingToRestore => 'Aucune sauvegarde trouvée.',
-    ProfileSyncResult.unavailable =>
-      'Sauvegarde indisponible (pas de Firebase).',
-    ProfileSyncResult.authFailed =>
-      'Authentification échouée. Activez l\'auth anonyme dans Firebase Console.',
-    ProfileSyncResult.permissionDenied =>
-      'Accès refusé. Vérifiez les règles Firestore.',
-    ProfileSyncResult.failed => 'Échec, réessayez plus tard.',
+  static String _message(AppStrings strings, ProfileSyncResult result) => switch (result) {
+    ProfileSyncResult.saved => strings.backupSaved,
+    ProfileSyncResult.restored => strings.backupRestored,
+    ProfileSyncResult.nothingToRestore => strings.backupNothingToRestore,
+    ProfileSyncResult.unavailable => strings.backupUnavailable,
+    ProfileSyncResult.authFailed => strings.backupAuthFailed,
+    ProfileSyncResult.permissionDenied => strings.backupPermissionDenied,
+    ProfileSyncResult.failed => strings.backupFailed,
   };
 
-  Future<void> _run(Future<ProfileSyncResult> Function() action) async {
+  Future<void> _run(
+    Future<ProfileSyncResult> Function() action,
+    AppStrings strings,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final result = await action();
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(_message(result))));
+      ..showSnackBar(SnackBar(content: Text(_message(strings, result))));
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -68,11 +72,11 @@ class _BackupScreenState extends State<BackupScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 16),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16),
                               child: Text(
-                                'Sauvegardez vos donnees et exportez les',
-                                style: TextStyle(
+                                strings.backupTitle,
+                                style: const TextStyle(
                                   fontFamily: 'Nunito',
                                   fontSize: 27,
                                   fontWeight: FontWeight.w700,
@@ -83,19 +87,19 @@ class _BackupScreenState extends State<BackupScreen> {
                             ),
                             const SizedBox(height: 71),
                             _BackupButton(
-                              label: 'Sauvegarder mes donnees',
+                              label: strings.backupSaveButton,
                               icon: Icons.favorite_border,
                               onTap: busy
                                   ? null
-                                  : () => _run(widget.store.save),
+                                  : () => _run(widget.store.save, strings),
                             ),
                             const SizedBox(height: 22),
                             _BackupButton(
-                              label: 'Restaurer les donnees',
+                              label: strings.backupRestoreButton,
                               icon: Icons.download_outlined,
                               onTap: busy
                                   ? null
-                                  : () => _run(widget.store.restore),
+                                  : () => _run(widget.store.restore, strings),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(10),
@@ -106,7 +110,7 @@ class _BackupScreenState extends State<BackupScreen> {
                                       snapshot.connectionState !=
                                           ConnectionState.done
                                       ? '…'
-                                      : snapshot.data ?? 'indisponible';
+                                      : snapshot.data ?? strings.backupIdUnavailableValue;
                                   return Text(
                                     'ID: $text',
                                     style: const TextStyle(
@@ -131,6 +135,13 @@ class _BackupScreenState extends State<BackupScreen> {
                   ],
                 );
               },
+            ),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: LanguageToggleButton(
+              controller: LocaleScope.controllerOf(context),
             ),
           ),
         ],

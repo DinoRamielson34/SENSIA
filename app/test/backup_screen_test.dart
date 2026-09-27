@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:izahay/localization/language_storage.dart';
+import 'package:izahay/localization/locale_controller.dart';
+import 'package:izahay/localization/locale_scope.dart';
 import 'package:izahay/models/user_role.dart';
 import 'package:izahay/profile/profile_store.dart';
 import 'package:izahay/screens/backup_screen.dart';
@@ -48,7 +51,7 @@ void main() {
     expect(find.text('ID: indisponible'), findsOneWidget);
     await tester.tap(find.text('Sauvegarder mes donnees'));
     await tester.pumpAndSettle();
-    expect(find.text('Sauvegarde indisponible.'), findsOneWidget);
+    expect(find.text('Sauvegarde indisponible (pas de Firebase).'), findsOneWidget);
   });
 
   testWidgets('un échec du dépôt affiche un message d\'erreur', (tester) async {
@@ -64,5 +67,20 @@ void main() {
     await tester.tap(find.text('Restaurer les donnees'));
     await tester.pumpAndSettle();
     expect(find.text('Échec, réessayez plus tard.'), findsOneWidget);
+  });
+
+  testWidgets('affiche le titre en malagasy par défaut', (tester) async {
+    final controller = LocaleController(storage: MemoryLanguageStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LocaleScope(
+          controller: controller,
+          child: BackupScreen(store: ProfileStore()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tehirizo ny angon-drakitrao ary alefaso'), findsOneWidget);
   });
 }

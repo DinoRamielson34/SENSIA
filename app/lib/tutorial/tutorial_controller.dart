@@ -11,8 +11,7 @@ class TutorialController extends ChangeNotifier {
   /// Nombre maximal d'affichages automatiques si le tutoriel n'est pas terminé.
   static const maxAutoShows = 2;
 
-  /// Étapes triées par `order`.
-  final List<TutorialStep> steps;
+  List<TutorialStep> _steps;
   final TutorialStorage _storage;
   final Map<String, GlobalKey> _keys = {};
 
@@ -25,16 +24,28 @@ class TutorialController extends ChangeNotifier {
   TutorialController({
     required List<TutorialStep> steps,
     TutorialStorage? storage,
-  }) : steps = List.unmodifiable(
-         [...steps]..sort((a, b) => a.order.compareTo(b.order)),
-       ),
+  }) : _steps = _sorted(steps),
        _storage = storage ?? MemoryTutorialStorage();
+
+  static List<TutorialStep> _sorted(List<TutorialStep> steps) =>
+      List.unmodifiable([...steps]..sort((a, b) => a.order.compareTo(b.order)));
+
+  /// Étapes triées par `order`.
+  List<TutorialStep> get steps => _steps;
+
+  /// Remplace les étapes (ex. après un changement de langue). Ignoré si le
+  /// tutoriel est déjà affiché : il ne change pas de contenu au milieu
+  /// d'une étape en cours.
+  void updateSteps(List<TutorialStep> steps) {
+    if (_active) return;
+    _steps = _sorted(steps);
+  }
 
   bool get isActive => _active;
   int get index => _index;
-  TutorialStep? get current => _active ? steps[_index] : null;
+  TutorialStep? get current => _active ? _steps[_index] : null;
   bool get isFirst => _index == 0;
-  bool get isLast => _index == steps.length - 1;
+  bool get isLast => _index == _steps.length - 1;
 
   /// Vrai si l'utilisateur est déjà allé au bout du tutoriel.
   bool get completed => _progress.completed;
@@ -53,7 +64,7 @@ class TutorialController extends ChangeNotifier {
   /// s'il ne s'est pas déjà affiché [maxAutoShows] fois.
   Future<void> startIfNeeded() async {
     await _ensureLoaded();
-    if (_active || steps.isEmpty) return;
+    if (_active || _steps.isEmpty) return;
     if (_progress.completed || _progress.autoShownCount >= maxAutoShows) return;
     _progress = _progress.copyWith(
       autoShownCount: _progress.autoShownCount + 1,
@@ -66,13 +77,13 @@ class TutorialController extends ChangeNotifier {
   /// affichage automatique.
   Future<void> restart() async {
     await _ensureLoaded();
-    if (_active || steps.isEmpty) return;
+    if (_active || _steps.isEmpty) return;
     await _begin();
   }
 
   Future<void> _begin() async {
     _index = 0;
-    await steps.first.onEnter?.call();
+    await _steps.first.onEnter?.call();
     _active = true;
     notifyListeners();
   }
@@ -101,7 +112,7 @@ class TutorialController extends ChangeNotifier {
     if (_busy) return;
     _busy = true;
     try {
-      await steps[target].onEnter?.call();
+      await _steps[target].onEnter?.call();
       _index = target;
       notifyListeners();
     } finally {

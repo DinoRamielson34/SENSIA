@@ -96,11 +96,16 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     _locale = LocaleController(storage: widget.languageStorage);
-    unawaited(_locale.load());
     _menuOpen = ValueNotifier(false);
     _tutorial = TutorialController(
-      steps: listeningTutorialSteps(_menuOpen),
+      steps: listeningTutorialSteps(_menuOpen, _locale.strings),
       storage: widget.tutorialStorage ?? SharedPreferencesTutorialStorage(),
+    );
+    unawaited(
+      _locale.load().then((_) {
+        if (!mounted) return;
+        _tutorial.updateSteps(listeningTutorialSteps(_menuOpen, _locale.strings));
+      }),
     );
     _pipeline =
         widget.pipeline ??

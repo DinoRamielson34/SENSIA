@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
+import 'package:izahay/localization/app_strings.dart';
 import 'package:izahay/localization/language_storage.dart';
 import 'package:izahay/localization/locale_controller.dart';
 import 'package:izahay/localization/locale_scope.dart';
@@ -170,7 +171,7 @@ void main() {
     }
 
     final tutorial = TutorialController(
-      steps: listeningTutorialSteps(menuOpen),
+      steps: listeningTutorialSteps(menuOpen, AppStrings.fr),
       storage: MemoryTutorialStorage(),
     );
     await tester.pumpWidget(

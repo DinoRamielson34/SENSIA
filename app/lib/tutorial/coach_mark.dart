@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../localization/locale_scope.dart';
 import '../theme/app_theme.dart';
 import 'tutorial_step.dart';
 
@@ -29,10 +30,16 @@ class CoachMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Semantics(
       container: true,
       liveRegion: true,
-      label: '${step.title}. ${step.description}. Étape $number sur $total.',
+      label: strings.stepAnnouncement(
+        title: step.title,
+        description: step.description,
+        number: number,
+        total: total,
+      ),
       child: Material(
         color: AppColors.background,
         elevation: 6,
@@ -105,7 +112,7 @@ class CoachMark extends StatelessWidget {
                           side: const BorderSide(color: AppColors.primary),
                           textStyle: _buttonStyle,
                         ),
-                        child: const Text('Précédent'),
+                        child: Text(strings.tutorialPrevious),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -119,7 +126,7 @@ class CoachMark extends StatelessWidget {
                         foregroundColor: AppColors.onPrimary,
                         textStyle: _buttonStyle,
                       ),
-                      child: Text(_isLast ? 'Terminer' : 'Suivant'),
+                      child: Text(_isLast ? strings.tutorialFinish : strings.tutorialNext),
                     ),
                   ),
                 ],
@@ -132,7 +139,7 @@ class CoachMark extends StatelessWidget {
                     foregroundColor: AppColors.title,
                     textStyle: _buttonStyle,
                   ),
-                  child: const Text('Passer le tutoriel'),
+                  child: Text(strings.tutorialSkip),
                 ),
             ],
           ),

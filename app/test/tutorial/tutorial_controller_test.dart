@@ -67,4 +67,21 @@ void main() {
     await c.previous();
     expect(c.index, 0);
   });
+
+  test('updateSteps remplace les étapes si le tutoriel n\'est pas actif', () async {
+    final c = _controller(MemoryTutorialStorage());
+    c.updateSteps(const [
+      TutorialStep(order: 1, targetId: 'z', title: 'Z', description: 'z'),
+    ]);
+    expect(c.steps.single.targetId, 'z');
+  });
+
+  test('updateSteps est ignoré si le tutoriel est déjà actif', () async {
+    final c = _controller(MemoryTutorialStorage());
+    await c.startIfNeeded();
+    c.updateSteps(const [
+      TutorialStep(order: 1, targetId: 'z', title: 'Z', description: 'z'),
+    ]);
+    expect(c.steps.first.targetId, 'a'); // inchangé
+  });
 }

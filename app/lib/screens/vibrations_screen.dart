@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../config/vibration_entries.dart';
+import '../localization/app_strings.dart';
+import '../localization/locale_scope.dart';
 import '../models/vibration_entry.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home_button.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/wave_decor.dart';
 
 class VibrationsScreen extends StatelessWidget {
@@ -29,6 +32,7 @@ class VibrationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = LocaleScope.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
@@ -41,11 +45,11 @@ class VibrationsScreen extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 80, 20, 16),
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.only(left: 1),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 1),
                         child: Text(
-                          'Liste des vibrations',
-                          style: TextStyle(
+                          strings.vibrationsListTitle,
+                          style: const TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 27,
                             fontWeight: FontWeight.w700,
@@ -61,9 +65,10 @@ class VibrationsScreen extends StatelessWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          for (final entry in entries ?? VibrationEntries.all)
+                          for (final entry in entries ?? VibrationEntries.build(strings))
                             _VibrationCard(
                               entry: entry,
+                              strings: strings,
                               onPattern: () => onPattern?.call(entry),
                               onSettings: () => onSettings?.call(entry),
                             ),
@@ -79,6 +84,13 @@ class VibrationsScreen extends StatelessWidget {
               ],
             ),
           ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: LanguageToggleButton(
+              controller: LocaleScope.controllerOf(context),
+            ),
+          ),
         ],
       ),
     );
@@ -87,11 +99,13 @@ class VibrationsScreen extends StatelessWidget {
 
 class _VibrationCard extends StatelessWidget {
   final VibrationEntry entry;
+  final AppStrings strings;
   final VoidCallback onPattern;
   final VoidCallback onSettings;
 
   const _VibrationCard({
     required this.entry,
+    required this.strings,
     required this.onPattern,
     required this.onSettings,
   });
@@ -138,12 +152,12 @@ class _VibrationCard extends StatelessWidget {
                 children: [
                   _RoundAction(
                     icon: Icons.waves,
-                    label: 'Vibration ${entry.label}',
+                    label: strings.vibrationPatternAction(entry.label),
                     onTap: onPattern,
                   ),
                   _RoundAction(
                     icon: Icons.settings_outlined,
-                    label: 'Réglages ${entry.label}',
+                    label: strings.vibrationSettingsAction(entry.label),
                     onTap: onSettings,
                   ),
                 ],

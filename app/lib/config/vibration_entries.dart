@@ -1,3 +1,4 @@
+import '../localization/app_strings.dart';
 import '../models/vibration_entry.dart';
 import 'sound_labels.dart';
 import 'sound_priority_config.dart';
@@ -7,8 +8,8 @@ import 'sound_priority_config.dart';
 class VibrationEntries {
   VibrationEntries._();
 
-  static final List<VibrationEntry> all = [
+  static List<VibrationEntry> build(AppStrings strings) => [
     for (final rule in SoundPriorityConfig.rules)
-      VibrationEntry(id: rule.category, label: SoundLabels.of(rule.category)),
+      VibrationEntry(id: rule.category, label: SoundLabels.of(strings, rule.category)),
   ];
 }

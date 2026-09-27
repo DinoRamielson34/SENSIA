@@ -1,3 +1,4 @@
+import '../localization/app_strings.dart';
 import '../models/settings_category.dart';
 import 'sound_labels.dart';
 import 'sound_priority_config.dart';
@@ -7,9 +8,7 @@ import 'sound_priority_config.dart';
 class SettingsCategories {
   SettingsCategories._();
 
-  static final List<SettingsCategory> all = _build();
-
-  static List<SettingsCategory> _build() {
+  static List<SettingsCategory> build(AppStrings strings) {
     final byPriority = <int, List<SoundRule>>{};
     for (final rule in SoundPriorityConfig.rules) {
       byPriority.putIfAbsent(rule.vibrationPriority, () => []).add(rule);
@@ -18,12 +17,12 @@ class SettingsCategories {
     return [
       for (final priority in priorities)
         SettingsCategory(
-          title: SoundLabels.priorityTitle(priority),
+          title: SoundLabels.priorityTitle(strings, priority),
           options: [
             for (final rule in byPriority[priority]!)
               SettingsOption(
                 id: rule.category,
-                label: SoundLabels.of(rule.category),
+                label: SoundLabels.of(strings, rule.category),
                 initialValue: true,
               ),
           ],

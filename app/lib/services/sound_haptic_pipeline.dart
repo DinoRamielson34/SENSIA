@@ -6,6 +6,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../config/haptic_pattern_config.dart';
 import '../config/sound_labels.dart';
 import '../haptics/haptic_engine.dart';
+import '../localization/app_strings.dart';
 import '../haptics/haptic_exceptions.dart';
 import '../haptics/models/vibration_pattern.dart';
 import '../models/audio_frame.dart';
@@ -256,8 +257,12 @@ class SoundHapticPipeline extends ChangeNotifier {
     unawaited(
       FlutterForegroundTask.updateService(
         notificationTitle: 'SENSIA',
+        // Notification système Android (service en arrière-plan) : hors du
+        // périmètre "écrans de production" de la traduction malagasy (voir
+        // docs/superpowers/specs/2026-09-27-traduction-malagasy-design.md) ;
+        // reste en français pour l'instant, comportement inchangé.
         notificationText:
-            'Son détecté : ${SoundLabels.of(result.event.category)}',
+            'Son détecté : ${SoundLabels.of(AppStrings.fr, result.event.category)}',
       ),
     );
   }

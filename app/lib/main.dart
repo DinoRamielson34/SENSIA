@@ -11,6 +11,9 @@ import 'haptics/segment_pattern.dart';
 import 'haptics/vibration_executor.dart';
 import 'history/firestore_history_repository.dart';
 import 'history/history_result_sink.dart';
+import 'localization/language_storage.dart';
+import 'localization/locale_controller.dart';
+import 'localization/locale_scope.dart';
 import 'models/vibration_entry.dart';
 import 'models/vibration_segment.dart';
 import 'profile/firestore_profile_repository.dart';
@@ -61,12 +64,17 @@ class IzahayApp extends StatefulWidget {
   /// Mémoire du tutoriel ; stockage local persistant par défaut.
   final TutorialStorage? tutorialStorage;
 
+  /// Stockage de la langue choisie ; `SharedPreferencesLanguageStorage` par
+  /// défaut (voir `LocaleController`).
+  final LanguageStorage? languageStorage;
+
   const IzahayApp({
     super.key,
     this.profileRepository,
     this.historySink,
     this.pipeline,
     this.tutorialStorage,
+    this.languageStorage,
   });
 
   @override
@@ -82,10 +90,13 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
   late final SoundHapticPipeline _pipeline;
   late final ValueNotifier<bool> _menuOpen;
   late final TutorialController _tutorial;
+  late final LocaleController _locale;
 
   @override
   void initState() {
     super.initState();
+    _locale = LocaleController(storage: widget.languageStorage);
+    unawaited(_locale.load());
     _menuOpen = ValueNotifier(false);
     _tutorial = TutorialController(
       steps: listeningTutorialSteps(_menuOpen),
@@ -122,6 +133,7 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
     _profile.dispose();
     _tutorial.dispose();
     _menuOpen.dispose();
+    _locale.dispose();
     if (widget.pipeline == null) _pipeline.dispose();
     super.dispose();
   }
@@ -216,25 +228,28 @@ class _IzahayAppState extends State<IzahayApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'SENSIA',
-      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-      home: Builder(
-        builder: (context) => RoleSelectionScreen(
-          onContinue: (role) {
-            _profile.setRole(role);
-            _open(
-              context,
-              (context) => VisionProblemScreen(
-                // TODO: remplacer par la suite du parcours quand elle existera.
-                onContinue: (type) {
-                  _profile.setColorVision(type);
-                  _open(context, _listening);
-                },
-              ),
-            );
-          },
+    return LocaleScope(
+      controller: _locale,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'SENSIA',
+        theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+        home: Builder(
+          builder: (context) => RoleSelectionScreen(
+            onContinue: (role) {
+              _profile.setRole(role);
+              _open(
+                context,
+                (context) => VisionProblemScreen(
+                  // TODO: remplacer par la suite du parcours quand elle existera.
+                  onContinue: (type) {
+                    _profile.setColorVision(type);
+                    _open(context, _listening);
+                  },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

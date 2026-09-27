@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:izahay/localization/language_storage.dart';
 import 'package:izahay/main.dart';
 import 'package:izahay/tutorial/tutorial_storage.dart';
 
@@ -11,9 +12,26 @@ MemoryTutorialStorage _doneTutorial() =>
 
 void main() {
   testWidgets('IzahayApp se construit avec un MaterialApp', (tester) async {
-    await tester.pumpWidget(IzahayApp(tutorialStorage: _doneTutorial()));
+    await tester.pumpWidget(
+      IzahayApp(
+        tutorialStorage: _doneTutorial(),
+        languageStorage: MemoryLanguageStorage(),
+      ),
+    );
 
     expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('IzahayApp démarre en malagasy par défaut', (tester) async {
+    await tester.pumpWidget(
+      IzahayApp(
+        tutorialStorage: _doneTutorial(),
+        languageStorage: MemoryLanguageStorage(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Ianao ve dia...'), findsOneWidget);
   });
 
   testWidgets('le compteur de taps s\'incrémente au clic', (tester) async {

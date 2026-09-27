@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izahay/haptics/haptic_engine.dart';
+import 'package:izahay/localization/app_language.dart';
+import 'package:izahay/localization/language_storage.dart';
 import 'package:izahay/main.dart';
 import 'package:izahay/tutorial/tutorial_storage.dart';
 import 'package:izahay/models/user_profile.dart';
@@ -47,6 +49,7 @@ void main() {
         pipeline: pipeline,
         profileRepository: repository,
         tutorialStorage: _doneTutorial(),
+        languageStorage: MemoryLanguageStorage(AppLanguage.francais),
       ),
     );
 
@@ -154,6 +157,7 @@ void main() {
         pipeline: pipeline,
         profileRepository: repository,
         tutorialStorage: _doneTutorial(),
+        languageStorage: MemoryLanguageStorage(AppLanguage.francais),
       ),
     );
     await tester.pump();
@@ -173,6 +177,7 @@ void main() {
           pipeline: pipeline,
           profileRepository: repository,
           tutorialStorage: _doneTutorial(),
+          languageStorage: MemoryLanguageStorage(AppLanguage.francais),
         ),
       );
       await tester.pump();

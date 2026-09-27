@@ -52,6 +52,10 @@ void main() {
         languageStorage: MemoryLanguageStorage(AppLanguage.francais),
       ),
     );
+    // Laisse `_locale.load()` (async) appliquer le français avant d'interagir
+    // avec l'écran : sans ce pump, le premier frame est encore en malagasy
+    // (valeur par défaut du constructeur), comme `_profile.restore()` déjà.
+    await tester.pump();
 
     // Le bouton home pulse en boucle : on avance par durée, pas par
     // pumpAndSettle, sauf menu ouvert.

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../localization/locale_scope.dart';
 import '../models/user_role.dart';
 import '../theme/app_theme.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/next_button.dart';
 import '../widgets/wave_decor.dart';
 
@@ -64,9 +66,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: IntrinsicHeight(child: _buildContent(selected)),
+                      child: IntrinsicHeight(child: _buildContent(context, selected)),
                     ),
                   ),
+                ),
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: LanguageToggleButton(
+                  controller: LocaleScope.controllerOf(context),
                 ),
               ),
             ],
@@ -76,18 +85,19 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     );
   }
 
-  Widget _buildContent(UserRole? selected) {
+  Widget _buildContent(BuildContext context, UserRole? selected) {
+    final strings = LocaleScope.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 100),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Text(
-              'Êtes-vous...',
-              style: TextStyle(
+              strings.roleSelectionTitle,
+              style: const TextStyle(
                 fontFamily: 'Nunito',
                 fontSize: 27,
                 fontWeight: FontWeight.w700,
@@ -165,7 +175,7 @@ class _RoleCardState extends State<_RoleCard> {
     return Semantics(
       button: true,
       selected: selected,
-      label: role.label,
+      label: role.label(LocaleScope.of(context)),
       child: MouseRegion(
         onEnter: (_) => setState(() => _hover = true),
         onExit: (_) => setState(() => _hover = false),
@@ -195,7 +205,7 @@ class _RoleCardState extends State<_RoleCard> {
               Padding(
                 padding: const EdgeInsets.all(10),
                 child: Text(
-                  role.label,
+                  role.label(LocaleScope.of(context)),
                   style: const TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 16,

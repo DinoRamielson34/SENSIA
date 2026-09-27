@@ -1,11 +1,17 @@
+import '../localization/app_strings.dart';
+
 enum ColorVisionType {
-  protanopie('Protanopie'),
-  deuteranopie('Deutéranopie'),
-  tritanopie('Tritanopie'),
-  achromatopsie('Achromatopsie'),
-  daltonisme('Daltonisme');
+  protanopie,
+  deuteranopie,
+  tritanopie,
+  achromatopsie,
+  daltonisme;
 
-  final String label;
-
-  const ColorVisionType(this.label);
+  String label(AppStrings strings) => switch (this) {
+    ColorVisionType.protanopie => strings.visionProtanopie,
+    ColorVisionType.deuteranopie => strings.visionDeuteranopie,
+    ColorVisionType.tritanopie => strings.visionTritanopie,
+    ColorVisionType.achromatopsie => strings.visionAchromatopsie,
+    ColorVisionType.daltonisme => strings.visionDaltonisme,
+  };
 }

@@ -1,8 +1,11 @@
+import '../localization/app_strings.dart';
+
 enum UserRole {
-  accompagnateur('Accompagnateur'),
-  client('Client');
+  accompagnateur,
+  client;
 
-  final String label;
-
-  const UserRole(this.label);
+  String label(AppStrings strings) => switch (this) {
+    UserRole.accompagnateur => strings.roleAccompagnateur,
+    UserRole.client => strings.roleClient,
+  };
 }

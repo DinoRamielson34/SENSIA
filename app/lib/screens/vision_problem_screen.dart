@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../localization/locale_scope.dart';
 import '../models/color_vision_type.dart';
 import '../theme/app_theme.dart';
 import '../widgets/color_vision_dots.dart';
+import '../widgets/language_toggle_button.dart';
 import '../widgets/next_button.dart';
 import '../widgets/wave_decor.dart';
 
@@ -65,9 +67,16 @@ class _VisionProblemScreenState extends State<VisionProblemScreen> {
                       constraints: BoxConstraints(
                         minHeight: constraints.maxHeight,
                       ),
-                      child: IntrinsicHeight(child: _buildContent(selected)),
+                      child: IntrinsicHeight(child: _buildContent(context, selected)),
                     ),
                   ),
+                ),
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: LanguageToggleButton(
+                  controller: LocaleScope.controllerOf(context),
                 ),
               ),
             ],
@@ -77,18 +86,22 @@ class _VisionProblemScreenState extends State<VisionProblemScreen> {
     );
   }
 
-  Widget _buildContent(ColorVisionType? selected) {
+  Widget _buildContent(BuildContext context, ColorVisionType? selected) {
+    final strings = LocaleScope.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 36),
-        const Padding(padding: EdgeInsets.only(left: 4), child: _BackButton()),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: _BackButton(label: strings.back),
+        ),
         const SizedBox(height: 18),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 27),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 27),
           child: Text(
-            'Quel trouble de la vision\ndes couleurs\nprésentez-vous ?',
-            style: TextStyle(
+            strings.visionProblemTitle,
+            style: const TextStyle(
               fontFamily: 'Nunito',
               fontSize: 27,
               fontWeight: FontWeight.w700,
@@ -131,13 +144,15 @@ class _VisionProblemScreenState extends State<VisionProblemScreen> {
 }
 
 class _BackButton extends StatelessWidget {
-  const _BackButton();
+  final String label;
+
+  const _BackButton({required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Retour',
+      label: label,
       child: GestureDetector(
         onTap: () => Navigator.maybePop(context),
         behavior: HitTestBehavior.opaque,
@@ -196,7 +211,7 @@ class _VisionOption extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: type.label,
+      label: type.label(LocaleScope.of(context)),
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -214,7 +229,7 @@ class _VisionOption extends StatelessWidget {
               const SizedBox(width: 23),
               Expanded(
                 child: Text(
-                  type.label,
+                  type.label(LocaleScope.of(context)),
                   style: TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 15.5,

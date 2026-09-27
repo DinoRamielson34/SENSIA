@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../localization/locale_scope.dart';
 import '../theme/app_theme.dart';
 
 /// Bouton « Suivants » commun aux écrans d'onboarding.
@@ -29,9 +30,9 @@ class NextButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (showLabel) ...[
-              const Text(
-                'Suivants',
-                style: TextStyle(
+              Text(
+                LocaleScope.of(context).nextButtonLabel,
+                style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
